@@ -1,8 +1,8 @@
-import sounddevice as sd
-import soundfile as sf
-import math
-import numpy as np
-import mutagen
+from math import ceil, floor
+from numpy import abs, clip, fft
+from mutagen.wave import WAVE
+from sounddevice import query_devices, play, InputStream
+from soundfile import read
 
 
 def pre_processing(sound_files: list[str], chan_id: int, width_plage: int, gain: int, lower_bound: int, upper_bound: int, number_of_blocks: int) -> None:
@@ -32,18 +32,18 @@ def pre_processing(sound_files: list[str], chan_id: int, width_plage: int, gain:
     # main loop
     for file in sound_files:
         # Calculate audio length
-        length: float = mutagen.wave.WAVE(file).info.length / number_of_blocks
+        length: float = WAVE(file).info.length / number_of_blocks
 
         # Plays audio on dediacted channel
-        data, fs = sf.read(file, dtype='float32')
-        sd.play(data, fs, device=chan_id)
+        data, fs = read(file, dtype='float32')
+        play(data, fs, device=chan_id)
         try:
-            samplerate = sd.query_devices(chan_id, 'input')[
+            samplerate = query_devices(chan_id, 'input')[
                 'default_samplerate']
 
             delta_f = (upper_bound - lower_bound) / (width_plage - 1)
-            fftsize = math.ceil(samplerate / delta_f)
-            low_bin = math.floor(lower_bound / delta_f)
+            fftsize = ceil(samplerate / delta_f)
+            low_bin = floor(lower_bound / delta_f)
 
             def callback(indata, frames, time, status):
                 if status:
@@ -51,16 +51,16 @@ def pre_processing(sound_files: list[str], chan_id: int, width_plage: int, gain:
                     print('\x1b[34;40m', text.center(width_plage, '#'),
                           '\x1b[0m', sep='')
                 if any(indata):
-                    magnitude = np.abs(np.fft.rfft(indata[:, 0], n=fftsize))
+                    magnitude = abs(fft.rfft(indata[:, 0], n=fftsize))
                     magnitude *= gain / fftsize
-                    line = (gradient[int(np.clip(x, 0, 1) * (len(gradient) - 1))]
+                    line = (gradient[int(clip(x, 0, 1) * (len(gradient) - 1))]
                             for x in magnitude[low_bin:low_bin + width_plage])
                     print(*line, sep='', end='\x1b[0m\n')
                 else:
                     print('no input')
 
-            with sd.InputStream(device=chan_id, channels=1, callback=callback,
-                                blocksize=int(samplerate * length), samplerate=samplerate):
+            with InputStream(device=chan_id, channels=1, callback=callback,
+                             blocksize=int(samplerate * length), samplerate=samplerate):
                 while True:
                     response = input()
                     if response in ('', 'q', 'Q'):
@@ -78,3 +78,7 @@ def pre_processing(sound_files: list[str], chan_id: int, width_plage: int, gain:
             exit('Interrupted by user')
         except Exception as e:
             exit(type(e).__name__ + ': ' + str(e))
+
+
+def show_available_devices() -> None:
+    print(query_devices())
