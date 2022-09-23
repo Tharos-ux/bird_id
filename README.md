@@ -11,13 +11,12 @@ Deeplearning is only one of the possible solution.
 
 
 ## Method and steps :
-    - Data pre-processing
-        Import audios and convert them into spectrograms (choose parameters)
-        Data augmentation to limit overfitting
-        ...
+1. Data pre-processing
+- Import audios and convert them into spectrograms (choose parameters)
+- Data augmentation to limit overfitting
+...
 
-    - Neural Network construction
-        Spectrogram are analysed as images
-        Our program will have to associate patterns in those images
-        to a specie
-        ...
+2. Neural Network construction
+- Spectrogram are analysed as images
+- Our program will have to associate patterns in those images to a specie
+...
