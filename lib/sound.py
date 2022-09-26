@@ -1,7 +1,7 @@
 from math import ceil, floor
 from numpy import abs, clip, fft
 from mutagen.wave import WAVE
-from sounddevice import query_devices, play, InputStream
+from sounddevice import query_devices, play, OutputStream
 from soundfile import read
 
 
@@ -59,8 +59,8 @@ def pre_processing(sound_files: list[str], chan_id: int, width_plage: int, gain:
                 else:
                     print('no input')
 
-            with InputStream(device=chan_id, channels=1, callback=callback,
-                             blocksize=int(samplerate * length), samplerate=samplerate):
+            with OutputStream(device=chan_id, channels=1, callback=callback,
+                              blocksize=int(samplerate * length), samplerate=samplerate):
                 while True:
                     response = input()
                     if response in ('', 'q', 'Q'):
@@ -82,3 +82,6 @@ def pre_processing(sound_files: list[str], chan_id: int, width_plage: int, gain:
 
 def show_available_devices() -> None:
     print(query_devices())
+
+
+pre_processing(["data/test.wav"], 11, 30, 5, 500, 20000, 5)
