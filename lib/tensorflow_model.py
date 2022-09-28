@@ -6,6 +6,7 @@ from pathlib import Path
 data_dir: Path = Path("data/")
 
 # parameters
+# définir une taille de fenêtre glissante et une longueur max d'enregistrement
 batch_size: int = 0
 img_height: int = 0
 img_width: int = 0
@@ -33,7 +34,7 @@ val_ds: list = tf.keras.utils.image_dataset_from_directory(
 # get all the different classes names (here, folders)
 class_names: list[str] = train_ds.class_names
 
-# buffering to increase performance
+# buffering to increase performance (à modif)
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
@@ -77,7 +78,7 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential) -> st
         str: a string giving the name of the most probable bird
     """
     img = tf.keras.utils.load_img(
-        entry_path, target_size=(img_height, img_width))
+        entry_path, target_size=(img_height, img_width)) # penser à la normaliser hihi
     img_array = tf.keras.utils.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0)  # Create a batch
     predictions = trained_model.predict(img_array)
