@@ -1,5 +1,7 @@
 import numpy as np
 import tensorflow as tf
+import seaborn as sns
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 # assuming graphs are saved in directories, grouped by species name
@@ -7,9 +9,10 @@ data_dir: Path = Path("data/")
 
 # parameters
 # définir une taille de fenêtre glissante et une longueur max d'enregistrement
-batch_size: int = 0
-img_height: int = 0
-img_width: int = 0
+batch_size: int = 0 # taille des paquets de données
+img_height: int = 0 # nb de pixels en hauteur
+img_width: int = 0 # nb de pixels en largeur
+training_steps: int = 20 # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
 
 # building the train dataset
 train_ds: list = tf.keras.utils.image_dataset_from_directory(
@@ -45,26 +48,31 @@ model: tf.keras.models.Sequential = tf.keras.models.Sequential([
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'), # couche de convolution = nécessaire pour traiter des images en DL
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(len(class_names))
+    tf.keras.layers.Dense(len(class_names)) # sortie
 ])
 
+print(model.summary())
+
 # model compilation
+# choose optimizer between SGD, ...
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(
                   from_logits=True),
               metrics=['accuracy']
               )
 
-# train model (for 10 iterations)
+# train model (for training_steps iterations)
 model_training_inforations = model.fit(
     train_ds,
     validation_data=val_ds,
-    epochs=10
+    epochs=training_steps
 )
+
+# tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential) -> str:
