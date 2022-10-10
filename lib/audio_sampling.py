@@ -31,7 +31,7 @@ def export_spectro(l_chunks:list, dir:str, filename_init:str):
         spectro = librosa.stft(chunk)
 
         img = librosa.display.specshow(librosa.amplitude_to_db(np.abs(spectro), ref=np.max))
-        path = 'spec_' + str(idx_chunk) + '.png'
+        path = filename + '_spec_' + str(idx_chunk) + '.png'
         plt.savefig(path)
     os.chdir('../..')
 
