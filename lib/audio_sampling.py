@@ -10,18 +10,22 @@ def audio_processing(dir):
 
     l_raw_audios = glob(dir)
 
-    for idx_audio, raw_audio in enumerate(l_raw_audios):
+    for raw_audio in l_raw_audios:
         l_chunks = load_in_blocks(raw_audio) # cut the audio into chunks
+        
+        dir = raw_audio[21:27] # get specie name
+        filename_init = raw_audio[28:-4] # get file ID
+        export_spectro(l_chunks, dir, filename_init) # creates spectrogram and exports them in
+                                             # train_set/<specie_name>/<file_ID>_<spec_nbr>.png
 
-        export_spectro(l_chunks, str(idx_audio)) # creates spectrogram and exports them
-
-def export_spectro(l_chunks:list, dir:str):
+def export_spectro(l_chunks:list, dir:str, filename_init:str):
     """ Converts audio into spectros and exports them """
 
     try:
         os.chdir('train_set/' + dir)
     except:
         os.mkdir('train_set/' + dir) # create a new directory to store spectro
+        os.chdir('train_set/' + dir)
 
     for idx_chunk, chunk in enumerate(l_chunks):
         spectro = librosa.stft(chunk)
@@ -29,6 +33,7 @@ def export_spectro(l_chunks:list, dir:str):
         img = librosa.display.specshow(librosa.amplitude_to_db(np.abs(spectro), ref=np.max))
         path = 'train_set/' + dir + '/spec_' + str(idx_chunk) + '.png'
         plt.savefig(path)
+    os.chdir('../..')
 
 
 def load_in_blocks(audio_path:str, frame_size: int=5):
@@ -58,5 +63,5 @@ def load_in_blocks(audio_path:str, frame_size: int=5):
 
     return l_chunks
 
-dir = 'birdsong-recognition/reshaw/XC399004.mp3'
+dir = 'birdsong-recognition/brdowl/*'
 list = audio_processing(dir)
