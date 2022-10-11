@@ -28,7 +28,7 @@ def export_spectro(l_chunks:list, specie_name:str, filename:str):
     for idx_chunk, chunk in enumerate(l_chunks):
         spectro = librosa.stft(chunk)
         img = librosa.display.specshow(librosa.amplitude_to_db(np.abs(spectro), ref=np.max))
-        plt.savefig(f"train_set/{specie_name}/{filename}_spec_{idx_chunk}.png")
+        plt.savefig(f"train_set/{specie_name}/{filename}_spec_{idx_chunk}.png",bbox_inches="tight",pad_inches=-0.1)
 
 
 def load_in_blocks(audio_path:str, frame_size: int=5, limit_chunks:int = 30):
@@ -51,5 +51,4 @@ def load_in_blocks(audio_path:str, frame_size: int=5, limit_chunks:int = 30):
     return l_chunks
 
 if __name__ == "__main__"
-    dir = 'birdsong-recognition/brdowl/*'
-    list = audio_processing(dir)
+    audio_processing(f"birdsong-recognition")
