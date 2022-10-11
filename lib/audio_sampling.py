@@ -1,4 +1,3 @@
-from glob import glob
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
@@ -7,7 +6,7 @@ from os import listdir
 import os
 from pathlib import Path
 
-def audio_processing(data_path:str) -> None:
+def audio_processing(data_path:str,output_path:str) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
@@ -18,17 +17,17 @@ def audio_processing(data_path:str) -> None:
             # cut the audio into chunks
             l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
             # creates spectrogram and exports them in
-            export_spectro(l_chunks, specie, raw_audio.split('.')[0])
+            export_spectro(l_chunks, specie, raw_audio.split('.')[0],output_path)
             # train_set/<specie_name>/<file_ID>_<spec_nbr>.png
 
-def export_spectro(l_chunks:list, specie_name:str, filename:str):
+def export_spectro(l_chunks:list, specie_name:str, filename:str, output_path:str):
     """ Converts audio into spectros and exports them """
-    Path(f"train_set/{specie_name}").mkdir(parents=True, exist_ok=True)
+    Path(f"{output_path}/{specie_name}").mkdir(parents=True, exist_ok=True)
 
     for idx_chunk, chunk in enumerate(l_chunks):
         spectro = librosa.stft(chunk)
         img = librosa.display.specshow(librosa.amplitude_to_db(np.abs(spectro), ref=np.max))
-        plt.savefig(f"train_set/{specie_name}/{filename}_spec_{idx_chunk}.png",bbox_inches="tight",pad_inches=-0.1)
+        plt.savefig(f"{output_path}/{specie_name}/{filename}_spec_{idx_chunk}.png",bbox_inches="tight",pad_inches=-0.1)
 
 
 def load_in_blocks(audio_path:str, frame_size: int=5, limit_chunks:int = 30):
@@ -49,6 +48,3 @@ def load_in_blocks(audio_path:str, frame_size: int=5, limit_chunks:int = 30):
         l_chunks[idx],_ = librosa.core.load(audio_path, mono=True, sr=sr, offset=idx*frame_size, duration=frame_size)
 
     return l_chunks
-
-if __name__ == "__main__"
-    audio_processing(f"birdsong-recognition")
