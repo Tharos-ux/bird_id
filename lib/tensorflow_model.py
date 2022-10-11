@@ -4,75 +4,77 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# assuming graphs are saved in directories, grouped by species name
-data_dir: Path = Path("data/")
+def modeling(data_directory:str = "data"):
+    # assuming graphs are saved in directories, grouped by species name
+    data_dir: Path = Path(f"{data_directory}/")
 
-# parameters
-# définir une taille de fenêtre glissante et une longueur max d'enregistrement
-batch_size: int = 0 # taille des paquets de données
-img_height: int = 0 # nb de pixels en hauteur
-img_width: int = 0 # nb de pixels en largeur
-training_steps: int = 20 # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
+    # parameters
+    # définir une taille de fenêtre glissante et une longueur max d'enregistrement
+    batch_size: int = 300 # taille des paquets de données
+    img_height: int = 480 # nb de pixels en hauteur
+    img_width: int = 354 # nb de pixels en largeur
+    training_steps: int = 10 # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
 
-# building the train dataset
-train_ds: list = tf.keras.utils.image_dataset_from_directory(
-    data_dir,
-    validation_split=0.2,
-    subset="training",
-    seed=123,
-    image_size=(img_height, img_width),
-    batch_size=batch_size
-)
+    # building the train dataset
+    train_ds: list = tf.keras.utils.image_dataset_from_directory(
+        data_dir,
+        validation_split=0.2,
+        subset="training",
+        seed=123,
+        image_size=(img_height, img_width),
+        batch_size=batch_size
+    )
 
-# building the validation dataset
-val_ds: list = tf.keras.utils.image_dataset_from_directory(
-    data_dir,
-    validation_split=0.2,
-    subset="validation",
-    seed=123,
-    image_size=(img_height, img_width),
-    batch_size=batch_size
-)
+    # building the validation dataset
+    val_ds: list = tf.keras.utils.image_dataset_from_directory(
+        data_dir,
+        validation_split=0.2,
+        subset="validation",
+        seed=123,
+        image_size=(img_height, img_width),
+        batch_size=batch_size
+    )
 
-# get all the different classes names (here, folders)
-class_names: list[str] = train_ds.class_names
+    # get all the different classes names (here, folders)
+    class_names: list[str] = train_ds.class_names
 
-# buffering to increase performance (à modif)
-train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
-val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    # buffering to increase performance (à modif)
+    train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
+    val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
-# building model
-model: tf.keras.models.Sequential = tf.keras.models.Sequential([
-    tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
-    tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'), # couche de convolution = nécessaire pour traiter des images en DL
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(len(class_names)) # sortie
-])
+    # building model
+    model: tf.keras.models.Sequential = tf.keras.models.Sequential([
+        tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+        tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
+        tf.keras.layers.MaxPooling2D(),
+        tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+        tf.keras.layers.MaxPooling2D(),
+        tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'), # couche de convolution = nécessaire pour traiter des images en DL
+        tf.keras.layers.MaxPooling2D(),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(len(class_names)) # sortie
+    ])
 
-print(model.summary())
+    print(model.summary())
 
-# model compilation
-# choose optimizer between SGD, ...
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(
-                  from_logits=True),
-              metrics=['accuracy']
-              )
+    # model compilation
+    # choose optimizer between SGD, ...
+    model.compile(optimizer='adam',
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(
+                    from_logits=True),
+                metrics=['accuracy']
+                )
 
-# train model (for training_steps iterations)
-model_training_inforations = model.fit(
-    train_ds,
-    validation_data=val_ds,
-    epochs=training_steps
-)
+    # train model (for training_steps iterations)
+    model_training_inforations = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        epochs=training_steps
+    )
 
-# tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
+    # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
+    return model
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential) -> str:
@@ -92,3 +94,6 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential) -> st
     predictions = trained_model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
     return f"This bird sound most likely belongs to {class_names[np.argmax(score)]} with a {100 * np.max(score)} percent confidence."
+
+if __name__ == "__main__":
+    print(prediction("spectro.png",modeling()))
