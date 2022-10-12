@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import listdir
 from pathlib import Path
-from logging import info, critical
+from logging import critical
 
 
 def audio_processing(data_path: str, output_path: str) -> None:

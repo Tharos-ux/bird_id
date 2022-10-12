@@ -2,7 +2,7 @@ from lib import audio_processing
 from constants import PATH_DATA, PATH_TRAIN
 from argparse import ArgumentParser
 from os import system
-from logging import basicConfig, captureWarnings, INFO, CRITICAL
+from logging import basicConfig, captureWarnings, ERROR
 
 
 def setup_logs() -> None:
@@ -11,7 +11,7 @@ def setup_logs() -> None:
         pass
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
-                encoding='utf-8', level=CRITICAL)
+                encoding='utf-8', level=ERROR)
 
 
 if __name__ == "__main__":
