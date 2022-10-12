@@ -81,7 +81,7 @@ def modeling(data_directory: str = "data"):
     return model
 
 
-def prediction(entry_path: str, trained_model: tf.keras.models.Sequential) -> str:
+def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:
     """Does a prediction from a img file
 
     Args:
