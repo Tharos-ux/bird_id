@@ -4,16 +4,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-def modeling(data_directory:str = "data"):
+
+def modeling(data_directory: str = "data"):
     # assuming graphs are saved in directories, grouped by species name
     data_dir: Path = Path(f"{data_directory}/")
 
     # parameters
     # définir une taille de fenêtre glissante et une longueur max d'enregistrement
-    batch_size: int = 300 # taille des paquets de données
-    img_height: int = 480 # nb de pixels en hauteur
-    img_width: int = 354 # nb de pixels en largeur
-    training_steps: int = 10 # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
+    batch_size: int = 300  # taille des paquets de données
+    img_height: int = 480  # nb de pixels en hauteur
+    img_width: int = 354  # nb de pixels en largeur
+    # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
+    training_steps: int = 10
 
     # building the train dataset
     train_ds: list = tf.keras.utils.image_dataset_from_directory(
@@ -44,16 +46,18 @@ def modeling(data_directory:str = "data"):
 
     # building model
     model: tf.keras.models.Sequential = tf.keras.models.Sequential([
-        tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+        tf.keras.layers.Rescaling(
+            1./255, input_shape=(img_height, img_width, 3)),
         tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'), # couche de convolution = nécessaire pour traiter des images en DL
+        # couche de convolution = nécessaire pour traiter des images en DL
+        tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Dense(len(class_names)) # sortie
+        tf.keras.layers.Dense(len(class_names))  # sortie
     ])
 
     print(model.summary())
@@ -61,10 +65,10 @@ def modeling(data_directory:str = "data"):
     # model compilation
     # choose optimizer between SGD, ...
     model.compile(optimizer='adam',
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(
-                    from_logits=True),
-                metrics=['accuracy']
-                )
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(
+                      from_logits=True),
+                  metrics=['accuracy']
+                  )
 
     # train model (for training_steps iterations)
     model_training_inforations = model.fit(
@@ -88,12 +92,13 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential) -> st
         str: a string giving the name of the most probable bird
     """
     img = tf.keras.utils.load_img(
-        entry_path, target_size=(img_height, img_width)) # penser à la normaliser hihi
+        entry_path, target_size=(img_height, img_width))  # penser à la normaliser hihi
     img_array = tf.keras.utils.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0)  # Create a batch
     predictions = trained_model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
     return f"This bird sound most likely belongs to {class_names[np.argmax(score)]} with a {100 * np.max(score)} percent confidence."
 
+
 if __name__ == "__main__":
-    print(prediction("spectro.png",modeling()))
+    print(prediction("spectro.png", modeling()))
