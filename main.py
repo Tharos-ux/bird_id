@@ -1,10 +1,13 @@
-from lib import audio_processing
 from constants import PATH_DATA, PATH_TRAIN
 from argparse import ArgumentParser
-from os import system
-from logging import basicConfig, captureWarnings, ERROR
+from os import system, listdir
+from logging import basicConfig, captureWarnings, ERROR, critical
+from pathlib import Path
 import shlex
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from typing import Callable
+from multiprocessing import cpu_count
 
 
 def setup_logs() -> None:
@@ -14,6 +17,7 @@ def setup_logs() -> None:
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
+
 
 def futures_collector(func: Callable, argslist: list, num_processes: int) -> list:
     """
@@ -26,6 +30,7 @@ def futures_collector(func: Callable, argslist: list, num_processes: int) -> lis
     with ThreadPoolExecutor(max_workers=num_processes) as executor:
         futures = [executor.submit(func, *args) for args in argslist]
     return [f.result() for f in futures]
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -43,4 +48,9 @@ if __name__ == "__main__":
 
     # plotting spectrograms for whole data folder
     if args.spectrograms:
-        retlist: list = futures_collector(subprocess.Popen, [[shlex.split(f"python lib/audio_sampling.py {PATH_DATA} {PATH_TRAIN} {specie}")] for specie in listdir(f"{PATH_DATA}/")], cpu_count())
+        for specie in listdir(PATH_DATA):
+            Path(f"{PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
+        critical("Folders creation complete!")
+
+        retlist: list = futures_collector(subprocess.Popen, [[shlex.split(
+            f"python lib/audio_sampling.py {PATH_DATA} {PATH_TRAIN} {specie}")] for specie in listdir(f"{PATH_DATA}/")], cpu_count())

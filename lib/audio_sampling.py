@@ -7,10 +7,9 @@ from pathlib import Path
 from logging import critical
 from time import monotonic
 from datetime import timedelta
-from concurrent.futures import ThreadPoolExecutor
-from typing import Callable
-from multiprocessing import cpu_count
 from argparse import ArgumentParser
+from logging import basicConfig, captureWarnings, ERROR
+
 
 def timer(arg: str):
     """
@@ -29,32 +28,20 @@ def timer(arg: str):
         return wrapper
     return my_inner_dec
 
-    
 
-def audio_processing(data_path: str, output_path: str,specie:str) -> None:
+def audio_processing(data_path: str, output_path: str, specie: str) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
         data_path (str): directory containing species folders
-    """    
+    """
     critical(f"Processing specie '{specie}'")
     for raw_audio in listdir(f"{data_path}/{specie}/"):
         # cut the audio into chunks
         l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
         # creates spectrogram and exports them in
         export_spectro(l_chunks, specie,
-                        raw_audio.split('.')[0], output_path)
-
-def specie_processing(output_path: str, specie: str, nb_specie: int, data_path: str):
-    list_of_l_chunks = []
-    Path(f"{output_path}/{specie}").mkdir(parents=True, exist_ok=True)
-    critical(
-        f"Processing specie n°{nb_specie+1}/{len(listdir(data_path+'/'))}")
-    for raw_audio in listdir(f"{data_path}/{specie}/"):
-        # cut the audio into chunks
-        list_of_l_chunks += load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
-    return list_of_l_chunks
-
+                       raw_audio.split('.')[0], output_path)
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
@@ -84,8 +71,11 @@ def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30)
         audio_path, mono=True, sr=22050, res_type='kaiser_fast')  # to get initial audio duration
     available_time = librosa.get_duration(y=entire_audio)
     limit: int = min(int(available_time//frame_size), limit_chunks)
+    if limit == 0:
+        limit = limit_chunks
     window: int = len(entire_audio)//limit
     return [entire_audio[idx*window:idx*window+window] for idx in range(limit)]
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -93,4 +83,7 @@ if __name__ == "__main__":
     parser.add_argument("output", help="path to a params .json file", type=str)
     parser.add_argument("specie", help="path to a params .json file", type=str)
     args = parser.parse_args()
-    audio_processing(args.data,args.output,args.specie)
+    captureWarnings(capture=True)
+    basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
+                encoding='utf-8', level=ERROR)
+    audio_processing(args.data, args.output, args.specie)
