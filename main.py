@@ -43,4 +43,4 @@ if __name__ == "__main__":
 
     # plotting spectrograms for whole data folder
     if args.spectrograms:
-        retlist: list = futures_collector(subprocess.Popen, [[shlex.split(f"python lib/audio_sampling.py {PATH_DATA} {PATH_TRAIN} {specie}")] for specie in listdir(f"{data_path}/")], cpu_count())
+        retlist: list = futures_collector(subprocess.Popen, [[shlex.split(f"python lib/audio_sampling.py {PATH_DATA} {PATH_TRAIN} {specie}")] for specie in listdir(f"{PATH_DATA}/")], cpu_count())
