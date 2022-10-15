@@ -5,17 +5,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-def modeling(data_directory: str = "data"):
+def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int):
     # assuming graphs are saved in directories, grouped by species name
     data_dir: Path = Path(f"{data_directory}/")
-
-    # parameters
-    # définir une taille de fenêtre glissante et une longueur max d'enregistrement
-    batch_size: int = 300  # taille des paquets de données
-    img_height: int = 480  # nb de pixels en hauteur
-    img_width: int = 354  # nb de pixels en largeur
-    # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
-    training_steps: int = 10
 
     # building the train dataset
     train_ds: list = tf.keras.utils.image_dataset_from_directory(

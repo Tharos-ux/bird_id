@@ -3,30 +3,11 @@ import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
 from os import listdir
-from pathlib import Path
 from logging import critical
 from time import monotonic
 from datetime import timedelta
 from argparse import ArgumentParser
 from logging import basicConfig, captureWarnings, ERROR
-
-
-def timer(arg: str):
-    """
-    Decorator ; prints out execution time of decorated func
-    * arg : descrptor name of job
-    """
-    def my_inner_dec(func):
-        def wrapper(*args, **kwargs):
-            print("Starting job...")
-            start_time = monotonic()
-            res = func(*args, **kwargs)
-            end_time = monotonic()
-            print(
-                f"{arg} : Finished after {timedelta(seconds=end_time - start_time)} seconds")
-            return res
-        return wrapper
-    return my_inner_dec
 
 
 def audio_processing(data_path: str, output_path: str, specie: str) -> None:
@@ -86,4 +67,5 @@ if __name__ == "__main__":
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
+    critical(f"Process '{args.specie}'")
     audio_processing(args.data, args.output, args.specie)

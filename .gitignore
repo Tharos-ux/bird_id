@@ -4,3 +4,5 @@ data_2/
 train_set/
 ffmpeg.exe
 bird_id.log
+spectrograms/
+data_done/

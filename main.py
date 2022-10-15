@@ -1,4 +1,4 @@
-from constants import PATH_DATA, PATH_TRAIN
+import constants
 from argparse import ArgumentParser
 from os import system, listdir
 from logging import basicConfig, captureWarnings, ERROR, critical
@@ -44,13 +44,23 @@ if __name__ == "__main__":
 
     # clean whole train set from disk
     if args.clean:
-        system(f"rm -r {PATH_TRAIN}/")
+        system(f"rm -r {constants.PATH_TRAIN}/")
+        critical("Train folder erased!")
 
     # plotting spectrograms for whole data folder
     if args.spectrograms:
-        for specie in listdir(PATH_DATA):
-            Path(f"{PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
+        for specie in listdir(constants.PATH_DATA):
+            Path(f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
         critical("Folders creation complete!")
 
-        retlist: list = futures_collector(subprocess.Popen, [[shlex.split(
-            f"python lib/audio_sampling.py {PATH_DATA} {PATH_TRAIN} {specie}")] for specie in listdir(f"{PATH_DATA}/")], cpu_count())
+        retcodes: list = []
+        try:
+            communicators: list = futures_collector(subprocess.Popen, [[shlex.split(
+                f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")] for specie in listdir(f"{constants.PATH_DATA}/")], cpu_count())
+
+            retcodes = [p.communicate() for p in communicators]
+        except Exception as exc:
+            raise exc
+        finally:
+            for i, code in enumerate(retcodes):
+                critical(f"Job {i} : {code}")
