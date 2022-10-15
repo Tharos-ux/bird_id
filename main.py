@@ -1,3 +1,4 @@
+from lib import prediction, modeling
 import constants
 from argparse import ArgumentParser
 from os import system, listdir
@@ -38,6 +39,8 @@ if __name__ == "__main__":
                         help="Erase all data inside training folder", action='store_true')
     parser.add_argument("-s", "--spectrograms",
                         help="Builds the spectrograms from the current data folder", action='store_true')
+    parser.add_argument("-p", "--predict",
+                        help="Predicts unknown spectrograms from a train folder", action='store_true')
     args = parser.parse_args()
 
     setup_logs()
@@ -64,3 +67,24 @@ if __name__ == "__main__":
         finally:
             for i, code in enumerate(retcodes):
                 critical(f"Job {i} : {code}")
+
+    if args.predict:
+        critical("Building model")
+        model, classes = modeling(
+            data_directory=constants.PATH_TRAIN,
+            batch_size=constants.BATCH_SIZE,
+            img_height=constants.HEIGHT,
+            img_width=constants.WIDTH,
+            training_steps=constants.EPOCHS
+        )
+        critical("Model build!")
+        for img in listdir(f"{constants.PATH_UNK}/"):
+            print(
+                prediction(
+                    entry_path=f"{constants.PATH_UNK}/{img}",
+                    trained_model=model,
+                    img_height=constants.HEIGHT,
+                    img_width=constants.WIDTH,
+                    class_names=classes
+                )
+            )

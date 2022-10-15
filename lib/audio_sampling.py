@@ -67,5 +67,4 @@ if __name__ == "__main__":
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
-    critical(f"Process '{args.specie}'")
     audio_processing(args.data, args.output, args.specie)

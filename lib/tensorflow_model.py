@@ -70,7 +70,7 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
     )
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
-    return model
+    return model, class_names
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:
@@ -90,7 +90,3 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_h
     predictions = trained_model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
     return f"This bird sound most likely belongs to {class_names[np.argmax(score)]} with a {100 * np.max(score)} percent confidence."
-
-
-if __name__ == "__main__":
-    print(prediction("spectro.png", modeling()))

@@ -1,5 +1,6 @@
 PATH_DATA: str = "data"
 PATH_TRAIN: str = "train_set"
+PATH_UNK: str = "unknown"
 BATCH_SIZE: int = 300  # taille des paquets de données
 HEIGHT: int = 480  # nb de pixels en hauteur
 WIDTH: int = 354  # nb de pixels en largeur
