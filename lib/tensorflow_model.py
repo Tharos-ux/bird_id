@@ -3,6 +3,7 @@ import tensorflow as tf
 import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
+from datetime import datetime
 
 
 def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int):
@@ -71,6 +72,15 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     return model, class_names
+
+
+def load_model(model_path: str):
+    return tf.keras.models.load_model(model_path)
+
+
+def save_model(trained_model):
+    tf.keras.models.save_model(
+        model=trained_model, filepath=f"/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}")
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:
