@@ -1,12 +1,33 @@
-import numpy as np
 import tensorflow as tf
-import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 from datetime import datetime
+from json import load, dump
+from os import path
 
 
-def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int):
+def plot_metrics(metrics, training_steps, path_to_save=None):
+
+    fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
+    axs[0, 0].title.set_text('Fig. A : Accuracy')
+    axs[0, 1].title.set_text('Fig. B : Loss')
+    axs[1, 0].title.set_text('Fig. C : Validation set accuracy')
+    axs[1, 1].title.set_text('Fig. D : Validation set loss')
+
+    x = [i+1 for i in range(training_steps)]
+
+    axs[0, 0].plot(x, metrics.history['accuracy'])
+    axs[0, 1].plot(x, metrics.history['loss'])
+    axs[1, 0].plot(x, metrics.history['val_loss'])
+    axs[1, 1].plot(x, metrics.history['val_accuracy'])
+
+    if path_to_save is not None:
+        plt.savefig(f"{path_to_save}/metrics.png")
+    else:
+        plt.show()
+
+
+def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int, save_status: bool):
     # assuming graphs are saved in directories, grouped by species name
     data_dir: Path = Path(f"{data_directory}/")
 
@@ -64,23 +85,31 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
                   )
 
     # train model (for training_steps iterations)
-    model_training_inforations = model.fit(
+    model_training_informations = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=training_steps
     )
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
+    save_model(model, class_names, model_training_informations,
+               training_steps, save_status)
+
     return model, class_names
 
 
 def load_model(model_path: str):
-    return tf.keras.models.load_model(model_path)
+    return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model):
-    tf.keras.models.save_model(
-        model=trained_model, filepath=f"/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}")
+def save_model(trained_model, classes, model_training_informations, training_steps, save_status):
+    out_path = None
+    if save_status:
+        out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
+        tf.keras.models.save_model(
+            model=trained_model, filepath=out_path)
+        dump(classes, open(f"{out_path}/classes.json", "w"))
+    plot_metrics(model_training_informations, training_steps, out_path)
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:
@@ -99,4 +128,4 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_h
     img_array = tf.expand_dims(img_array, 0)  # Create a batch
     predictions = trained_model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
-    return f"This bird sound most likely belongs to {class_names[np.argmax(score)]} with a {100 * np.max(score)} percent confidence."
+    return [(class_names[i], score[i].numpy()*100) for i in range(len(class_names))]

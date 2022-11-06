@@ -20,3 +20,16 @@ Deeplearning is only one of the possible solution.
 - Spectrogram are analysed as images
 - Our program will have to associate patterns in those images to a specie
 ...
+
+
+## Usage :
+
+Creates a model and saves it, execute predictions
+```bash
+python .\main.py -p -o
+```
+
+Load a pre-saved model and execute predictions
+```bash
+python .\main.py -p -m .\models\model_04-11-2022_16-46-07
+```
