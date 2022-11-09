@@ -3,7 +3,16 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from datetime import datetime
 from json import load, dump
-from os import path
+from multiprocessing import cpu_count
+from math import sqrt
+
+# Question de la taille des couches de convolution https://www.sicara.fr/blog-technique/2019-10-31-convolutional-layer-convolution-kernel
+# Question de la fonction d'activation (relu) ? https://www.tensorflow.org/api_docs/python/tf/keras/activations
+activation_functions: list = ['elu', 'exponential', 'gelu', 'hard_sigmoid', 'linear',
+                              'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'swish', 'tanh']
+# itérer à travers les fonctions et comparer les modèles ? (beaucoup de tests) > rentable ? ou partir sur une fonction courrament utilisée / voir thèse ?
+# Nombre de couches > décrit comme étant dépendant du problème (svt 3 convo2D???)
+# Rapport batch size / nb de classes : https://stackoverflow.com/questions/41175401/what-is-a-batch-in-tensorflow : hyperparamètre et dépend du problème
 
 
 def plot_metrics(metrics, training_steps, path_to_save=None):
@@ -28,6 +37,12 @@ def plot_metrics(metrics, training_steps, path_to_save=None):
 
 
 def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int, save_status: bool):
+
+    # Allocation of sqrt(threads) cores per process and sqrt(threads) parallel processes
+    sqrt_threads: int = int(sqrt(cpu_count()))
+    tf.config.threading.set_inter_op_parallelism_threads(sqrt_threads)
+    tf.config.threading.set_intra_op_parallelism_threads(sqrt_threads)
+
     # assuming graphs are saved in directories, grouped by species name
     data_dir: Path = Path(f"{data_directory}/")
 
@@ -66,7 +81,7 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
-        # couche de convolution = nécessaire pour traiter des images en DL
+        # couche de convolution 2D = nécessaire pour traiter des images en DL
         tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
