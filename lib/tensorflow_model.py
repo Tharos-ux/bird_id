@@ -6,14 +6,6 @@ from json import load, dump
 from multiprocessing import cpu_count
 from math import sqrt
 
-# Question de la taille des couches de convolution https://www.sicara.fr/blog-technique/2019-10-31-convolutional-layer-convolution-kernel
-# Question de la fonction d'activation (relu) ? https://www.tensorflow.org/api_docs/python/tf/keras/activations
-activation_functions: list = ['elu', 'exponential', 'gelu', 'hard_sigmoid', 'linear',
-                              'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'swish', 'tanh']
-# itérer à travers les fonctions et comparer les modèles ? (beaucoup de tests) > rentable ? ou partir sur une fonction courrament utilisée / voir thèse ?
-# Nombre de couches > décrit comme étant dépendant du problème (svt 3 convo2D???)
-# Rapport batch size / nb de classes : https://stackoverflow.com/questions/41175401/what-is-a-batch-in-tensorflow : hyperparamètre et dépend du problème
-
 
 def plot_metrics(metrics, training_steps, path_to_save=None):
 
