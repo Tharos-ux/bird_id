@@ -26,15 +26,22 @@ def audio_processing(data_path: str, output_path: str, specie: str) -> None:
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
-    """ Converts audio into spectros and exports them """
-
+    """ Converts audio into spectros and exports them 
+        /!\ SPECTROS ARE 500x400px for consistency issues --> some weren't this size without fixed params
+    Args:
+        l_chunks (list): list of chunks
+        specie_name (str): _description_
+        filename (str): _description_
+        output_path (str): _description_
+    """
     for idx_chunk, chunk in enumerate(l_chunks):
+        plt.rcParams["figure.figsize"] = (5, 4)
         spectro = librosa.stft(chunk)
         librosa.display.specshow(
             librosa.amplitude_to_db(np.abs(spectro), ref=np.max)
         )
         plt.savefig(f"{output_path}/{specie_name}/{filename}_spec_{idx_chunk}.png",
-                    bbox_inches="tight", pad_inches=-0.1)
+                    bbox_inches="tight", pad_inches=-0.1, dpi=100)
         plt.close()
 
 

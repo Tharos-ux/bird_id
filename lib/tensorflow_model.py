@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from datetime import datetime
 from json import load, dump
-from os import path
+from multiprocessing import cpu_count
+from math import sqrt
 
 
 def plot_metrics(metrics, training_steps, path_to_save=None):
@@ -28,6 +29,12 @@ def plot_metrics(metrics, training_steps, path_to_save=None):
 
 
 def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int, save_status: bool):
+
+    # Allocation of sqrt(threads) cores per process and sqrt(threads) parallel processes
+    sqrt_threads: int = int(sqrt(cpu_count()))
+    tf.config.threading.set_inter_op_parallelism_threads(sqrt_threads)
+    tf.config.threading.set_intra_op_parallelism_threads(sqrt_threads)
+
     # assuming graphs are saved in directories, grouped by species name
     data_dir: Path = Path(f"{data_directory}/")
 
@@ -66,7 +73,7 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
-        # couche de convolution = nécessaire pour traiter des images en DL
+        # couche de convolution 2D = nécessaire pour traiter des images en DL
         tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
