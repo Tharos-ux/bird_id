@@ -62,8 +62,11 @@ if __name__ == "__main__":
 
         retcodes: list = []
         try:
-            communicators: list = futures_collector(subprocess.Popen, [[shlex.split(
-                f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")] for specie in listdir(f"{constants.PATH_DATA}/")], cpu_count())
+            communicators: list = futures_collector(subprocess.Popen,
+            [
+                [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
+            for specie in listdir(f"{constants.PATH_DATA}/")
+            ], cpu_count())
 
             retcodes = [p.communicate() for p in communicators]
         except Exception as exc:

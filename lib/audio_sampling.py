@@ -70,8 +70,11 @@ if __name__ == "__main__":
     parser.add_argument("data", help="path to a params .json file", type=str)
     parser.add_argument("output", help="path to a params .json file", type=str)
     parser.add_argument("specie", help="path to a params .json file", type=str)
+    parser.add_argument("-f", "--filter",
+                        help="whouhou un filtre", action='store_true')
     args = parser.parse_args()
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
     audio_processing(args.data, args.output, args.specie)
+    critical("ça s'est bien passé !")

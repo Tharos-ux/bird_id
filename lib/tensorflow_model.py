@@ -1,5 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import seaborn as sns
 from pathlib import Path
 from datetime import datetime
 from json import load, dump
@@ -7,7 +8,7 @@ from multiprocessing import cpu_count
 from math import sqrt
 
 
-def plot_metrics(metrics, training_steps, path_to_save=None):
+def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
 
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
@@ -26,6 +27,22 @@ def plot_metrics(metrics, training_steps, path_to_save=None):
         plt.savefig(f"{path_to_save}/metrics.png")
     else:
         plt.show()
+
+    plt.close()
+
+    number_digits: int = 2
+    plt.figure(figsize=(7, 6))
+    ax = plt.axes()
+    ax.set_title(f"Confusion matrix")
+    cm = cm.div(cm.sum(axis=1), axis=0) * 100 # percentage 
+    sns.heatmap(cm, annot=True, cmap=cmap,fmt=f".{number_digits}f", linewidths=0.5, ax=ax)
+    
+    if path_to_save is not None:
+        plt.savefig(f"{path_to_save}/conf_matrix.png")
+    else:
+        plt.show()
+
+    plt.close()
 
 
 def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int, save_status: bool):
@@ -98,9 +115,18 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
         epochs=training_steps
     )
 
+    # get predictions
+    y_pred = model.predict(val_ds, verbose=2)
+
+    # compute confusion matrix with `tf` 
+    confusion = tf.math.confusion_matrix(
+                labels = np.argmax(len(class_names), axis=1),      # get trule labels 
+                predictions = np.argmax(y_pred, axis=1),  # get predicted labels 
+                num_classes=len(class_names))  
+
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               training_steps, save_status)
+               training_steps, confusion, save_status)
 
     return model, class_names
 
@@ -109,14 +135,15 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, training_steps, save_status):
+def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, save_status):
     out_path = None
     if save_status:
         out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
-    plot_metrics(model_training_informations, training_steps, out_path)
+        dump(confusion_matrix, open(f"{out_path}/confusion_matrix.json", "w"))
+    plot_metrics(confusion_matrix, model_training_informations, training_steps,classes, out_path)
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:
