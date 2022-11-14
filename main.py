@@ -45,6 +45,8 @@ if __name__ == "__main__":
                         help="Path to a saved model", type=str, required=False)
     parser.add_argument("-o", "--output",
                         help="Model will be saved on disk for later use", action='store_true')
+    parser.add_argument("-f", "--filter",
+                        help="Specifies spectro filtering", action='store_true')
     args = parser.parse_args()
 
     setup_logs()
@@ -64,7 +66,7 @@ if __name__ == "__main__":
         try:
             communicators: list = futures_collector(subprocess.Popen,
             [
-                [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
+                [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
             for specie in listdir(f"{constants.PATH_DATA}/")
             ], cpu_count())
 

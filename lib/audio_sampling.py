@@ -9,7 +9,6 @@ from datetime import timedelta
 from argparse import ArgumentParser
 from logging import basicConfig, captureWarnings, ERROR
 
-
 def audio_processing(data_path: str, output_path: str, specie: str) -> None:
     """Exports raw audios into pre-processed spectrograms
 
@@ -22,11 +21,11 @@ def audio_processing(data_path: str, output_path: str, specie: str) -> None:
         l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
         # creates spectrogram and exports them in
         export_spectro(l_chunks, specie,
-                       raw_audio.split('.')[0], output_path)
+                    raw_audio.split('.')[0], output_path)
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
-    """ Converts audio into spectros and exports them 
+    """ Converts audio into spectros and exports them
         /!\ SPECTROS ARE 500x400px for consistency issues --> some weren't this size without fixed params
     Args:
         l_chunks (list): list of chunks
@@ -45,13 +44,13 @@ def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path:
         plt.close()
 
 
-def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30):
+def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30, overlap: float = 0.5):
     """Chunks audio into parts of 'frame_size' seconds
 
     Args:
         entry_path (str): path to audio
         frame_size (int, optional): chunks size. Defaults to 5.
-
+        overlap (float, optional): overlap percentage
     Returns:
         list of chunks
     """
@@ -62,7 +61,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30)
     if limit == 0:
         limit = limit_chunks
     window: int = len(entire_audio)//limit
-    return [entire_audio[idx*window:idx*window+window] for idx in range(limit)]
+    return [entire_audio[int(idx*overlap*window):idx*window+window] for idx in range(limit)]
 
 
 if __name__ == "__main__":

@@ -29,14 +29,13 @@ def timer(arg: str):
         return wrapper
     return my_inner_dec
 
-    
 
 def audio_processing(data_path: str, output_path: str,specie:str) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
         data_path (str): directory containing species folders
-    """    
+    """
     critical(f"Processing specie '{specie}'")
     for raw_audio in listdir(f"{data_path}/{specie}/"):
         # cut the audio into chunks
@@ -44,6 +43,7 @@ def audio_processing(data_path: str, output_path: str,specie:str) -> None:
         # creates spectrogram and exports them in
         export_spectro(l_chunks, specie,
                         raw_audio.split('.')[0], output_path)
+
 
 def specie_processing(output_path: str, specie: str, nb_specie: int, data_path: str):
     list_of_l_chunks = []
