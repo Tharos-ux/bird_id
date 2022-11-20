@@ -62,15 +62,22 @@ if __name__ == "__main__":
             Path(f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
         critical("Folders creation complete!")
 
+        tasks: list = listdir(f"{constants.PATH_DATA}/")
+        batches = [tasks[i: i+cpu_count()]
+                   for i in range((len(tasks) // (cpu_count()//2)) + 1)]
+
         retcodes: list = []
         try:
-            communicators: list = futures_collector(subprocess.Popen,
-            [
-                [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
-            for specie in listdir(f"{constants.PATH_DATA}/")
-            ], cpu_count())
+            for i, batch in enumerate(batches):
+                communicators: list = futures_collector(subprocess.Popen,
+                                                        [
+                                                            [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(
+                                                                f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
+                                                            for specie in batch
+                                                        ], cpu_count()//2)
 
-            retcodes = [p.communicate() for p in communicators]
+                retcodes = [p.communicate() for p in communicators]
+                critical(f"Batch {i} of {len(batches)} ended sucessfully")
         except Exception as exc:
             raise exc
         finally:
