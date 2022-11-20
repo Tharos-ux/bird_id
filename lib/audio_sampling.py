@@ -8,20 +8,24 @@ from time import monotonic
 from datetime import timedelta
 from argparse import ArgumentParser
 from logging import basicConfig, captureWarnings, ERROR
+import json
 
-def audio_processing(data_path: str, output_path: str, specie: str) -> None:
+def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float=3) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
         data_path (str): directory containing species folders
     """
     critical(f"Processing specie '{specie}'")
+    with open("metadata.json") as file:
+        metadata: dict = json.load(file)
     for raw_audio in listdir(f"{data_path}/{specie}/"):
-        # cut the audio into chunks
-        l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
-        # creates spectrogram and exports them in
-        export_spectro(l_chunks, specie,
-                    raw_audio.split('.')[0], output_path)
+        if metadata[raw_audio] >= rating_max:
+            # cut the audio into chunks
+            l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
+            # creates spectrogram and exports them in
+            export_spectro(l_chunks, specie,
+                        raw_audio.split('.')[0], output_path)
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
