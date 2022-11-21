@@ -6,7 +6,8 @@ from datetime import datetime
 from json import load, dump
 from multiprocessing import cpu_count
 from math import sqrt
-from numpy import argmax
+from numpy import argmax, max
+import numpy as np
 
 
 def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
@@ -35,9 +36,9 @@ def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
     plt.figure(figsize=(7, 6))
     ax = plt.axes()
     ax.set_title(f"Confusion matrix")
-    cm = cm.div(cm.sum(axis=1), axis=0) * 100  # percentage
+    #cm = cm.div(cm.sum(axis=1), axis=0) * 100  # percentage
     sns.heatmap(cm, annot=True, cmap=sns.cubehelix_palette(
-        as_cmap=True), fmt=f".{number_digits}f", linewidths=0.5, ax=ax)
+        as_cmap=True), linewidths=0.5, ax=ax)
 
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/conf_matrix.png")
@@ -79,7 +80,6 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
 
     # get all the different classes names (here, folders)
     class_names: list[str] = train_ds.class_names
-
     # buffering to increase performance (à modif)
     train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
@@ -118,13 +118,16 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
     )
 
     # get predictions
-    y_pred = model.predict(val_ds, verbose=2)
+
+
+    predictions = np.argmax(model.predict(val_ds), axis=1)
+    labels = np.concatenate([y for _, y in val_ds], axis=0)
 
     # compute confusion matrix with `tf`
     confusion = tf.math.confusion_matrix(
-        labels=argmax(len(class_names), axis=1),      # get trule labels
-        predictions=argmax(y_pred, axis=1),  # get predicted labels
-        num_classes=len(class_names))
+        labels= labels,   # get trule labels
+        predictions=predictions  # get predicted labels
+        ).numpy()
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
@@ -144,7 +147,7 @@ def save_model(trained_model, classes, model_training_informations, training_ste
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
-        dump(confusion_matrix, open(f"{out_path}/confusion_matrix.json", "w"))
+        #dump(confusion_matrix, open(f"{out_path}/confusion_matrix.json", "w"))
     plot_metrics(confusion_matrix, model_training_informations,
                  training_steps, classes, out_path)
 

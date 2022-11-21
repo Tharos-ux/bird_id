@@ -65,6 +65,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30,
     if limit == 0:
         limit = limit_chunks
     window: int = len(entire_audio)//limit
+
     return [entire_audio[int(idx*overlap*window):idx*window+window] for idx in range(limit)]
 
 
