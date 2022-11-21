@@ -9,6 +9,14 @@ from datetime import timedelta
 from argparse import ArgumentParser
 from logging import basicConfig, captureWarnings, ERROR
 import json
+import resource
+import psutil
+    
+  
+def limit_memory():
+    memory_lock = int((psutil.virtual_memory().total // (cpu_count()//2 )) * 0.8)
+    soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+    resource.setrlimit(resource.RLIMIT_AS, (memory_lock, hard))
 
 def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float=3) -> None:
     """Exports raw audios into pre-processed spectrograms
@@ -77,6 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--filter",
                         help="whouhou un filtre", action='store_true')
     args = parser.parse_args()
+    limit_memory()
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
