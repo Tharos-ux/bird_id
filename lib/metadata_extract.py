@@ -1,17 +1,11 @@
 import pandas as pd
 from argparse import ArgumentParser
+from json import dump
 
 
 def metadata_extract(input: str, output: str="metadata.json"):
     metadata = pd.read_csv(input)
-    with open(output, "w") as file:
-        file.write("{\n")
-        for i, id in enumerate(metadata.filename):
-            file.write(f"\"{str(id)}\" : {float(metadata.rating[i])}")
-            if i != len(metadata.filename)-1:
-                file.write(",")
-            file.write("\n")
-        file.write("}")
+    dump({id:metadata.rating[i] for i, id in enumerate(metadata.filename)},open(output, "w"))
 
 if __name__ == "__main__":
     parser = ArgumentParser()
