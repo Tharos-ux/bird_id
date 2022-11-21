@@ -32,6 +32,16 @@ def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
 
     plt.close()
 
+    # clustering
+    sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True), cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
+    # TODO Corriger l'ordre des classes
+    if path_to_save is not None:
+        plt.savefig(f"{path_to_save}/cluster_matrix.png")
+    else:
+        plt.show()
+
+    plt.close()
+
     number_digits: int = 2
     plt.figure(figsize=(7, 6))
     ax = plt.axes()
@@ -39,7 +49,7 @@ def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
     #cm = cm.div(cm.sum(axis=1), axis=0) * 100  # percentage
     sns.heatmap(cm, annot=True, cmap=sns.cubehelix_palette(
         as_cmap=True), linewidths=0.5, ax=ax)
-
+    # TODO mettre les noms de classe
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/conf_matrix.png")
     else:
