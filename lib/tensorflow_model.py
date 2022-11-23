@@ -6,12 +6,10 @@ from datetime import datetime
 from json import load, dump
 from multiprocessing import cpu_count
 from math import sqrt
-from numpy import argmax, max
 import numpy as np
 from pandas import DataFrame, crosstab
 
-
-def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels, path_to_save=None):
+def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
 
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
