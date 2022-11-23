@@ -8,9 +8,10 @@ from multiprocessing import cpu_count
 from math import sqrt
 from numpy import argmax, max
 import numpy as np
+from pandas import DataFrame, crosstab
 
 
-def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
+def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels, path_to_save=None):
 
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
@@ -32,8 +33,19 @@ def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
 
     plt.close()
 
+    inverted_map = {str(i): class_name for i,
+                    class_name in enumerate(classes_names)}
+
+    test_classes = [inverted_map[str(int(t))] for t in labels]
+    test_preds = [inverted_map[str(int(t))] for t in predictions]
+    data = {'y_Actual': test_classes, 'y_Predicted': test_preds}
+    df = DataFrame(data, columns=['y_Actual', 'y_Predicted'])
+    cm = crosstab(df['y_Actual'], df['y_Predicted'], rownames=[
+        'Actual'], colnames=['Predicted'])
+
     # clustering
-    sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True), cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
+    sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
+                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
     # TODO Corriger l'ordre des classes
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/cluster_matrix.png")
@@ -42,11 +54,9 @@ def plot_metrics(cm, metrics, training_steps, classes_names, path_to_save=None):
 
     plt.close()
 
-    number_digits: int = 2
-    plt.figure(figsize=(7, 6))
     ax = plt.axes()
     ax.set_title(f"Confusion matrix")
-    #cm = cm.div(cm.sum(axis=1), axis=0) * 100  # percentage
+    # cm = cm.div(cm.sum(axis=1), axis=0) * 100  # percentage
     sns.heatmap(cm, annot=True, cmap=sns.cubehelix_palette(
         as_cmap=True), linewidths=0.5, ax=ax)
     # TODO mettre les noms de classe
@@ -129,19 +139,18 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
 
     # get predictions
 
-
     predictions = np.argmax(model.predict(val_ds), axis=1)
     labels = np.concatenate([y for _, y in val_ds], axis=0)
 
     # compute confusion matrix with `tf`
     confusion = tf.math.confusion_matrix(
-        labels= labels,   # get trule labels
+        labels=labels,   # get trule labels
         predictions=predictions  # get predicted labels
-        ).numpy()
+    ).numpy()
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               training_steps, confusion, save_status)
+               training_steps, confusion, predictions, labels, save_status)
 
     return model, class_names
 
@@ -150,7 +159,7 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, save_status):
+def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, predictions, labels, save_status):
     out_path = None
     if save_status:
         out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
@@ -159,7 +168,7 @@ def save_model(trained_model, classes, model_training_informations, training_ste
         dump(classes, open(f"{out_path}/classes.json", "w"))
         #dump(confusion_matrix, open(f"{out_path}/confusion_matrix.json", "w"))
     plot_metrics(confusion_matrix, model_training_informations,
-                 training_steps, classes, out_path)
+                 training_steps, classes, predictions, labels, out_path)
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:

@@ -4,21 +4,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import listdir
 from logging import critical
-from time import monotonic
-from datetime import timedelta
 from argparse import ArgumentParser
 from logging import basicConfig, captureWarnings, ERROR
-import json
-import resource
-import psutil
-    
-  
-def limit_memory():
-    memory_lock = int((psutil.virtual_memory().total // (cpu_count()//2 )) * 0.8)
-    soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-    resource.setrlimit(resource.RLIMIT_AS, (memory_lock, hard))
+from json import load
+from resource import setrlimit, getrlimit, RLIMIT_AS
+from psutil import virtual_memory
+from multiprocessing import cpu_count
 
-def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float=3) -> None:
+
+def limit_memory():
+    memory_lock = int(
+        (virtual_memory().total // (cpu_count()//2)) * 0.8)
+    soft, hard = getrlimit(RLIMIT_AS)
+    setrlimit(RLIMIT_AS, (memory_lock, hard))
+
+
+def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float = 3) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
@@ -26,14 +27,14 @@ def audio_processing(data_path: str, output_path: str, specie: str, rating_max: 
     """
     critical(f"Processing specie '{specie}'")
     with open("metadata.json") as file:
-        metadata: dict = json.load(file)
+        metadata: dict = load(file)
     for raw_audio in listdir(f"{data_path}/{specie}/"):
         if metadata[raw_audio] >= rating_max:
             # cut the audio into chunks
             l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
             # creates spectrogram and exports them in
             export_spectro(l_chunks, specie,
-                        raw_audio.split('.')[0], output_path)
+                           raw_audio.split('.')[0], output_path)
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
@@ -90,4 +91,4 @@ if __name__ == "__main__":
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
     audio_processing(args.data, args.output, args.specie)
-    critical("ça s'est bien passé !")
+    critical(f"Job {args.specie} ended sucessfully!")
