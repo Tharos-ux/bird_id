@@ -10,11 +10,12 @@ from json import load
 from resource import setrlimit, getrlimit, RLIMIT_AS
 from psutil import virtual_memory
 from multiprocessing import cpu_count
+from time import sleep
 
 
 def limit_memory(): # Merci pour ça <3
     memory_lock = int(
-        (virtual_memory().total // (cpu_count()//2)) * 0.8)
+        (virtual_memory().total // (cpu_count()//2)) * 0.6)
     soft, hard = getrlimit(RLIMIT_AS)
     setrlimit(RLIMIT_AS, (memory_lock, hard))
 
@@ -47,6 +48,7 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
                     processed=True
                 except:
                     print("Avoided one error, resuming...")
+                    sleep(20)
                     pass
 
         if count > max_spectro: break
