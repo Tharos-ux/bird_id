@@ -33,14 +33,22 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
     count = 0
     for raw_audio in listdir(f"{data_path}/{specie}/"):
         if metadata[raw_audio] >= rating_max:
-            # cut the audio into chunks
-            chunks: list = load_in_blocks(f"{data_path}/{specie}/{raw_audio}",
-                                        filter = filter)
-            # creates spectrogram and exports them in
-            export_spectro(chunks, specie,
-                            raw_audio.split('.')[0], output_path)
+            processed:bool=False
+            while not processed:
+                try:
+                    # cut the audio into chunks
+                    chunks: list = load_in_blocks(f"{data_path}/{specie}/{raw_audio}",
+                                                filter = filter)
+                    # creates spectrogram and exports them in
+                    export_spectro(chunks, specie,
+                                    raw_audio.split('.')[0], output_path)
 
-            count += len(chunks)
+                    count += len(chunks)
+                    processed=True
+                except:
+                    print("Avoided one error, resuming...")
+                    pass
+
         if count > max_spectro: break
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
