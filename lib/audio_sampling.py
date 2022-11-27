@@ -7,19 +7,13 @@ from logging import critical
 from argparse import ArgumentParser
 from logging import basicConfig, captureWarnings, ERROR
 from json import load
-from resource import setrlimit, getrlimit, RLIMIT_AS
 from psutil import virtual_memory
 from multiprocessing import cpu_count
+from time import sleep
+from random import random
 
 
-def limit_memory():
-    memory_lock = int(
-        (virtual_memory().total // (cpu_count()//2)) * 0.8)
-    soft, hard = getrlimit(RLIMIT_AS)
-    setrlimit(RLIMIT_AS, (memory_lock, hard))
-
-
-def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float = 3) -> None:
+def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float = 4) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
@@ -29,12 +23,26 @@ def audio_processing(data_path: str, output_path: str, specie: str, rating_max: 
     with open("metadata.json") as file:
         metadata: dict = load(file)
     for raw_audio in listdir(f"{data_path}/{specie}/"):
-        if metadata[raw_audio] >= rating_max:
-            # cut the audio into chunks
-            l_chunks = load_in_blocks(f"{data_path}/{specie}/{raw_audio}")
-            # creates spectrogram and exports them in
-            export_spectro(l_chunks, specie,
-                           raw_audio.split('.')[0], output_path)
+        processed: bool = False
+        while not processed:
+            if metadata[raw_audio] >= rating_max:
+                try:
+                    # cut the audio into chunks
+                    l_chunks = load_in_blocks(
+                        f"{data_path}/{specie}/{raw_audio}")
+                    # creates spectrogram and exports them in
+                    export_spectro(l_chunks, specie,
+                                   raw_audio.split('.')[0], output_path)
+                    processed = True
+                except ZeroDivisionError:
+                    processed = True
+                except Exception as exc:
+                    next_iter: float = 10 + 20*random()
+                    critical(
+                        f"W : Occured exception on file {raw_audio}.\n                         {exc}\n                         Resuming task in {int(next_iter)} seconds.")
+                    sleep(20)
+            else:
+                processed = True
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
@@ -86,7 +94,6 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--filter",
                         help="whouhou un filtre", action='store_true')
     args = parser.parse_args()
-    limit_memory()
     captureWarnings(capture=True)
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)

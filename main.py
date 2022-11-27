@@ -58,31 +58,30 @@ if __name__ == "__main__":
 
     # plotting spectrograms for whole data folder
     if args.spectrograms:
-        for specie in listdir(constants.PATH_DATA):
-            Path(f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
-        critical("Folders creation complete!")
-
         tasks: list = listdir(f"{constants.PATH_DATA}/")
-        batches = [tasks[i: i+cpu_count()]
-                   for i in range((len(tasks) // (cpu_count()//2)) + 1)]
-
+        step: int = cpu_count()//2
+        batches = [tasks[i: i+step]
+                   for i in range(0, len(tasks), step)]
         retcodes: list = []
         try:
             for i, batch in enumerate(batches):
+                # batch = ens de dossiers
+                critical(f">>> Processing batch {i+1} of {len(batches)} <<<")
+                for specie in batch:
+                    Path(
+                        f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
                 communicators: list = futures_collector(subprocess.Popen,
                                                         [
                                                             [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(
                                                                 f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
                                                             for specie in batch
-                                                        ], cpu_count()//2)
+                                                        ], len(batch))
 
                 retcodes = [p.communicate() for p in communicators]
-                critical(f"Batch {i} of {len(batches)} ended sucessfully")
+                critical(
+                    f">>> Batch {i+1} of {len(batches)} ended sucessfully <<<")
         except Exception as exc:
-            raise exc
-        finally:
-            for i, code in enumerate(retcodes):
-                critical(f"Job {i} : {code}")
+            critical(f"C : {exc}")
 
     if args.predict or args.output:
         if args.model is not None:

@@ -6,7 +6,6 @@ from datetime import datetime
 from json import load, dump
 from multiprocessing import cpu_count
 from math import sqrt
-from numpy import argmax, max
 import numpy as np
 from pandas import DataFrame, crosstab
 
@@ -27,7 +26,7 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
     axs[1, 1].plot(x, metrics.history['val_accuracy'])
 
     if path_to_save is not None:
-        plt.savefig(f"{path_to_save}/metrics.png")
+        plt.savefig(f"{path_to_save}/metrics.png", transparent=True)
     else:
         plt.show()
 
@@ -48,7 +47,7 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
                    cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
     # TODO Corriger l'ordre des classes
     if path_to_save is not None:
-        plt.savefig(f"{path_to_save}/cluster_matrix.png")
+        plt.savefig(f"{path_to_save}/cluster_matrix.png", transparent=True)
     else:
         plt.show()
 
@@ -61,7 +60,7 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
         as_cmap=True), linewidths=0.5, ax=ax)
     # TODO mettre les noms de classe
     if path_to_save is not None:
-        plt.savefig(f"{path_to_save}/conf_matrix.png")
+        plt.savefig(f"{path_to_save}/conf_matrix.png", transparent=True)
     else:
         plt.show()
 
