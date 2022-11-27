@@ -1,7 +1,10 @@
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('agg')
 import numpy as np
+import gc
 from os import listdir
 from logging import critical
 from argparse import ArgumentParser
@@ -20,7 +23,7 @@ def limit_memory(): # Merci pour ça <3
     setrlimit(RLIMIT_AS, (memory_lock, hard))
 
 
-def audio_processing(data_path: str, output_path: str, specie: str, max_spectro: int,
+def audio_processing(data_path: str, output_path: str, specie: str, max_spectro: int = 750,
                      rating_max: float = 3, filter: bool = False) -> None:
     """Exports raw audios into pre-processed spectrograms
 
@@ -29,11 +32,11 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
     """
 
     critical(f"Processing specie '{specie}'")
-    with open("metadata.json") as file:
-        metadata: dict = load(file)
+    with open("rating.json") as file:
+        rating: dict = load(file)
     count = 0
     for raw_audio in listdir(f"{data_path}/{specie}/"):
-        if metadata[raw_audio] >= rating_max:
+        if rating[raw_audio] >= rating_max:
             processed:bool=False
             while not processed:
                 try:
@@ -49,7 +52,6 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
                 except:
                     print("Avoided one error, resuming...")
                     sleep(20)
-                    pass
 
         if count > max_spectro: break
 
@@ -70,6 +72,7 @@ def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path:
         )
         plt.savefig(f"{output_path}/{specie_name}/{filename}_spec_{idx_chunk}.png",
                     bbox_inches="tight", pad_inches=-0.1, dpi=100)
+        plt.close("all")
         plt.close()
 
 
@@ -87,6 +90,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 30,
     entire_audio, sr = librosa.core.load(
         audio_path, mono=True, sr=22050, res_type='kaiser_fast')  # to get initial audio duration
     available_time = librosa.get_duration(y=entire_audio)
+
     limit: int = min(int(available_time//frame_size), limit_chunks)
     if limit == 0:
         limit = limit_chunks
@@ -100,7 +104,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 30,
         l_chunks = list()
         for idx in range(limit):
             # j'ai décomposé pour que ce soit plus facile à comprendre/modifier mais on pourra condenser :)
-            chunk = entire_audio[idx*window:idx*window+window]
+            chunk = entire_audio[int(idx*window*overlap):idx*window + window]
             mean_amplitude_chunk[idx] = np.mean(np.abs(chunk))
             mean_amplitude_chunk_norm[idx] = (mean_amplitude_chunk[idx] /
                                     (mean_amplitude_entire_audio + var_amplitude_entire_audio))
@@ -108,7 +112,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 30,
                 l_chunks.append(chunk)
         return l_chunks
     else:
-        return [entire_audio[int(idx*overlap*window):idx*window+window] for idx in range(limit)]
+        return [entire_audio[int(idx*overlap*window):idx*window + window] for idx in range(limit)]
 
 
 if __name__ == "__main__":

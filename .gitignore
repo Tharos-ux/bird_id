@@ -8,3 +8,4 @@ spectrograms/
 data_done/
 unknown/
 models/
+train.csv

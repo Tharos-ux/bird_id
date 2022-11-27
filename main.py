@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         tasks: list = listdir(f"{constants.PATH_DATA}/")
         batches = [tasks[i: i+cpu_count()]
-                   for i in range((len(tasks) // (cpu_count()//2)) + 1)]
+                   for i in range((len(tasks) // (cpu_count()//4)) + 1)]
 
         retcodes: list = []
         try:
@@ -72,7 +72,7 @@ if __name__ == "__main__":
                 communicators: list = futures_collector(subprocess.Popen,
                                                         [
                                                             [shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} {constants.MAX_SPECTRO} -f") if args.filter else shlex.split(
-                                                                f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {constants.MAX_SPECTRO} {specie}")]
+                                                                f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} {constants.MAX_SPECTRO}")]
                                                             for specie in batch
                                                         ], cpu_count()//2)
 
