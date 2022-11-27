@@ -68,7 +68,7 @@ def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path:
         plt.close()
 
 
-def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30, filter = True):
+def load_in_blocks(audio_path: str, frame_size: int = 5, limit_chunks: int = 30, filter:bool = True, overlap: float = 0.5):
     """Chunks audio into parts of 'frame_size' seconds
 
     Args:
@@ -107,4 +107,5 @@ if __name__ == "__main__":
     parser.add_argument("output", help="path to a params .json file", type=str)
     parser.add_argument("specie", help="path to a params .json file", type=str)
     args = parser.parse_args()
-    audio_processing(args.data,args.output,args.specie)
+    audio_processing(args.data, args.output, args.specie)
+    critical(f"Job {args.specie} ended sucessfully!")

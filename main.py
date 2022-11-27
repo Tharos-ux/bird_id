@@ -72,8 +72,8 @@ if __name__ == "__main__":
                         f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
                 communicators: list = futures_collector(subprocess.Popen,
                                                         [
-                                                            [shlex.split(f"python lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} -f") if args.filter else shlex.split(
-                                                                f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie}")]
+                                                            [shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} {constants.MAX_SPECTRO} -f") if args.filter else shlex.split(
+                                                                f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} {constants.MAX_SPECTRO}")]
                                                             for specie in batch
                                                         ], len(batch))
 

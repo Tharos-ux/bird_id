@@ -9,7 +9,6 @@ from math import sqrt
 import numpy as np
 from pandas import DataFrame, crosstab
 
-
 def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels, path_to_save=None):
 
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
@@ -41,10 +40,10 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
     df = DataFrame(data, columns=['y_Actual', 'y_Predicted'])
     cm = crosstab(df['y_Actual'], df['y_Predicted'], rownames=[
         'Actual'], colnames=['Predicted'])
-
+    print('MATRIX : ', cm , 'FIN')
     # clustering
-    sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
-                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
+    '''sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
+                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)'''
     # TODO Corriger l'ordre des classes
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/cluster_matrix.png", transparent=True)
@@ -186,4 +185,6 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_h
     img_array = tf.expand_dims(img_array, 0)  # Create a batch
     predictions = trained_model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
-    return [(class_names[i], score[i].numpy()*100) for i in range(len(class_names))]
+    with open('names.json', 'r') as file: # Sortir le nom commun
+        names: dict = load(file)
+    return [(names[class_names[i]], score[i].numpy()*100) for i in range(len(class_names))]
