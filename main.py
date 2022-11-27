@@ -53,7 +53,8 @@ if __name__ == "__main__":
 
     # clean whole train set from disk
     if args.clean:
-        system(f"rm -r {constants.PATH_TRAIN}/")
+        system(
+            f"rm -r {constants.PATH_TRAIN_FILTER}/" if args.filter else f"rm -r {constants.PATH_TRAIN}/")
         critical("Train folder erased!")
 
     # plotting spectrograms for whole data folder
@@ -72,7 +73,7 @@ if __name__ == "__main__":
                         f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
                 communicators: list = futures_collector(subprocess.Popen,
                                                         [
-                                                            [shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} {constants.MAX_SPECTRO} -f") if args.filter else shlex.split(
+                                                            [shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN_FILTER} {specie} {constants.MAX_SPECTRO} -f") if args.filter else shlex.split(
                                                                 f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN} {specie} {constants.MAX_SPECTRO}")]
                                                             for specie in batch
                                                         ], len(batch))

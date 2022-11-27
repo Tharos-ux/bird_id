@@ -2,6 +2,7 @@ __pycache__/
 data/
 data_2/
 train_set/
+train_set_filter/
 ffmpeg.exe
 bird_id.log
 spectrograms/
