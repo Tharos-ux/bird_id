@@ -16,7 +16,7 @@ import matplotlib
 matplotlib.use('agg')
 
 
-def audio_processing(data_path: str, output_path: str, specie: str, rating_max: float = 4, filter: bool = False) -> None:
+def audio_processing(data_path: str, output_path: str, specie: str, max_spectro: int = 700, rating_max: float = 4, filter: bool = False) -> None:
     """Exports raw audios into pre-processed spectrograms
 
     Args:
@@ -26,7 +26,8 @@ def audio_processing(data_path: str, output_path: str, specie: str, rating_max: 
     critical(f"Processing specie '{specie}'")
     with open("rating.json") as file:
         rating: dict = load(file)
-    count = 0
+
+    count_spectro = 0
     for raw_audio in listdir(f"{data_path}/{specie}/"):
         processed: bool = False
         while not processed:
@@ -39,6 +40,7 @@ def audio_processing(data_path: str, output_path: str, specie: str, rating_max: 
                     export_spectro(l_chunks, specie,
                                    raw_audio.split('.')[0], output_path)
                     processed = True
+                    n_spectro += len(l_chunks)
                 except ZeroDivisionError:
                     processed = True
                 except Exception as exc:
@@ -48,6 +50,9 @@ def audio_processing(data_path: str, output_path: str, specie: str, rating_max: 
                     sleep(20)
             else:
                 processed = True
+
+        if count_spectro > max_spectro:
+            break
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
@@ -71,7 +76,7 @@ def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path:
         plt.close()
 
 
-def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 30,
+def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100,
                    filter: bool = False, overlap: float = 0.5):
     """Chunks audio into parts of 'frame_size' seconds
 
@@ -82,6 +87,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 30,
     Returns:
         list of chunks
     """
+
     entire_audio, sr = librosa.core.load(
         audio_path, mono=True, sr=22050, res_type='kaiser_fast')  # to get initial audio duration
     available_time = librosa.get_duration(y=entire_audio)
@@ -125,8 +131,7 @@ if __name__ == "__main__":
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
     if args.filter:
-        audio_processing(args.data, args.output, args.specie,
-                         args.max_spectro, filter=True)
+        audio_processing(args.data, args.output, args.specie, args.max_spectro, filter=True)
     else:
-        audio_processing(args.data, args.output, args.specie)
+        audio_processing(args.data, args.output, args.specie, args.max_spectro)
     critical(f"Job {args.specie} ended sucessfully!")

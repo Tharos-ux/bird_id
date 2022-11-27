@@ -48,7 +48,6 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--filter",
                         help="Specifies spectro filtering", action='store_true')
     args = parser.parse_args()
-
     setup_logs()
 
     # clean whole train set from disk
@@ -70,7 +69,7 @@ if __name__ == "__main__":
                 critical(f">>> Processing batch {i+1} of {len(batches)} <<<")
                 for specie in batch:
                     Path(
-                        f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
+                        f"{constants.PATH_TRAIN_FILTER}/{specie}" if args.filter else f"{constants.PATH_TRAIN}/{specie}").mkdir(parents=True, exist_ok=True)
                 communicators: list = futures_collector(subprocess.Popen,
                                                         [
                                                             [shlex.split(f"python3 lib/audio_sampling.py {constants.PATH_DATA} {constants.PATH_TRAIN_FILTER} {specie} {constants.MAX_SPECTRO} -f") if args.filter else shlex.split(
