@@ -40,7 +40,7 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
                     export_spectro(l_chunks, specie,
                                    raw_audio.split('.')[0], output_path)
                     processed = True
-                    n_spectro += len(l_chunks)
+                    count_spectro += len(l_chunks)
                 except ZeroDivisionError:
                     processed = True
                 except Exception as exc:
