@@ -68,17 +68,7 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
     plt.close()
 
 
-def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int, save_status: bool):
-
-    params: dict = {
-        'epochs': training_steps,
-        'batch': batch_size,
-        'validation_split': 0.2,
-        'layer_01_size': 8,
-        'layer_02_size': 16,
-        'layer_03_size': 32,
-        'layer_dense_size': 64,
-    }
+def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool):
 
     # Allocation of sqrt(threads) cores per process and sqrt(threads) parallel processes
     sqrt_threads: int = int(sqrt(cpu_count()))
@@ -165,7 +155,7 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               training_steps, confusion, predictions, labels, save_status, params, summary)
+               params['epochs'], confusion, predictions, labels, save_status, params, summary)
     print(
         f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names

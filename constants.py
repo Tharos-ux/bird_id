@@ -3,8 +3,16 @@ PATH_TRAIN: str = "train_unfiltered_sampled"
 PATH_TRAIN_FILTER: str = "train_filtered"
 PATH_UNK: str = "unknown"
 MAX_SPECTRO: int = 500  # max de spectro par espèce
-BATCH_SIZE: int = 32  # taille des paquets de données
 HEIGHT: int = 500  # nb de pixels en hauteur
 WIDTH: int = 400  # nb de pixels en largeur
-# nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
-EPOCHS: int = 60
+
+MODEL_PARAMS: dict = {
+    # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
+    'epochs': 60,
+    'batch': 32,  # taille des paquets de données
+    'validation_split': 0.2,
+    'layer_01_size': 8,
+    'layer_02_size': 16,
+    'layer_03_size': 32,
+    'layer_dense_size': 64,
+}

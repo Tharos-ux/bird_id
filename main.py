@@ -91,10 +91,9 @@ if __name__ == "__main__":
             critical("Building model")
             model, classes = modeling(
                 data_directory=constants.PATH_TRAIN,
-                batch_size=constants.BATCH_SIZE,
                 img_height=constants.HEIGHT,
                 img_width=constants.WIDTH,
-                training_steps=constants.EPOCHS,
+                params=constants.MODEL_PARAMS,
                 save_status=args.output
             )
         critical("Model build!")
