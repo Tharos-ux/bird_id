@@ -1,6 +1,7 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib import rcParams
 from pathlib import Path
 from datetime import datetime
 from json import load, dump
@@ -8,6 +9,7 @@ from multiprocessing import cpu_count
 from math import sqrt
 import numpy as np
 from pandas import DataFrame, crosstab
+
 
 def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels, path_to_save=None):
 
@@ -40,11 +42,12 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
     df = DataFrame(data, columns=['y_Actual', 'y_Predicted'])
     cm = crosstab(df['y_Actual'], df['y_Predicted'], rownames=[
         'Actual'], colnames=['Predicted'])
-    print('MATRIX : ', cm , 'FIN')
+    print('MATRIX : ', cm, 'FIN')
+
     # clustering
-    '''sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
-                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)'''
-    # TODO Corriger l'ordre des classes
+    rcParams['figure.figsize'] = 25, 20
+    sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
+                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/cluster_matrix.png", transparent=True)
     else:
@@ -52,12 +55,11 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
 
     plt.close()
 
+    rcParams['figure.figsize'] = 25, 20
     ax = plt.axes()
     ax.set_title(f"Confusion matrix")
-    # cm = cm.div(cm.sum(axis=1), axis=0) * 100  # percentage
     sns.heatmap(cm, annot=True, cmap=sns.cubehelix_palette(
         as_cmap=True), linewidths=0.5, ax=ax)
-    # TODO mettre les noms de classe
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/conf_matrix.png", transparent=True)
     else:
@@ -67,6 +69,16 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
 
 
 def modeling(data_directory: str, batch_size: int, img_height: int, img_width: int, training_steps: int, save_status: bool):
+
+    params: dict = {
+        'epochs': training_steps,
+        'batch': batch_size,
+        'validation_split': 0.2,
+        'layer_01_size': 8,
+        'layer_02_size': 16,
+        'layer_03_size': 32,
+        'layer_dense_size': 64,
+    }
 
     # Allocation of sqrt(threads) cores per process and sqrt(threads) parallel processes
     sqrt_threads: int = int(sqrt(cpu_count()))
@@ -79,46 +91,50 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
     # building the train dataset
     train_ds: list = tf.keras.utils.image_dataset_from_directory(
         data_dir,
-        validation_split=0.2,
+        validation_split=params['validation_split'],
         subset="training",
         seed=123,
         image_size=(img_height, img_width),
-        batch_size=batch_size
+        batch_size=params['batch']
     )
 
     # building the validation dataset
     val_ds: list = tf.keras.utils.image_dataset_from_directory(
         data_dir,
-        validation_split=0.2,
+        validation_split=params['validation_split'],
         subset="validation",
         seed=123,
         image_size=(img_height, img_width),
-        batch_size=batch_size
+        batch_size=params['batch']
     )
 
     # get all the different classes names (here, folders)
     class_names: list[str] = train_ds.class_names
-    # buffering to increase performance (à modif)
-    train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
-    val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    #train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
+    #val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
     # building model
     model: tf.keras.models.Sequential = tf.keras.models.Sequential([
         tf.keras.layers.Rescaling(
             1./255, input_shape=(img_height, img_width, 3)),
-        tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
+        tf.keras.layers.Conv2D(
+            params['layer_01_size'], 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+        tf.keras.layers.Conv2D(
+            params['layer_02_size'], 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         # couche de convolution 2D = nécessaire pour traiter des images en DL
-        tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+        tf.keras.layers.Conv2D(
+            params['layer_03_size'], 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(params['layer_dense_size'], activation='relu'),
         tf.keras.layers.Dense(len(class_names))  # sortie
     ])
 
-    print(model.summary())
+    summary = str(model.summary())
+
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
     # model compilation
     # choose optimizer between SGD, ...
@@ -132,7 +148,8 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
     model_training_informations = model.fit(
         train_ds,
         validation_data=val_ds,
-        epochs=training_steps
+        epochs=params['epochs'],
+        callbacks=[callback]
     )
 
     # get predictions
@@ -142,14 +159,15 @@ def modeling(data_directory: str, batch_size: int, img_height: int, img_width: i
 
     # compute confusion matrix with `tf`
     confusion = tf.math.confusion_matrix(
-        labels=labels,   # get trule labels
+        labels=labels,   # get true labels
         predictions=predictions  # get predicted labels
     ).numpy()
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               training_steps, confusion, predictions, labels, save_status)
-
+               training_steps, confusion, predictions, labels, save_status, params, summary)
+    print(
+        f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names
 
 
@@ -157,14 +175,16 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, predictions, labels, save_status):
+def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, predictions, labels, save_status, params, summary):
     out_path = None
     if save_status:
         out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
-        #dump(confusion_matrix, open(f"{out_path}/confusion_matrix.json", "w"))
+        dump(params, open(f"{out_path}/params.json", "w"))
+        with open(f"{out_path}/model.txt", "w") as writer:
+            writer.write(summary)
     plot_metrics(confusion_matrix, model_training_informations,
                  training_steps, classes, predictions, labels, out_path)
 
@@ -185,6 +205,6 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_h
     img_array = tf.expand_dims(img_array, 0)  # Create a batch
     predictions = trained_model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
-    with open('names.json', 'r') as file: # Sortir le nom commun
+    with open('names.json', 'r') as file:  # Sortir le nom commun
         names: dict = load(file)
     return [(names[class_names[i]], score[i].numpy()*100) for i in range(len(class_names))]

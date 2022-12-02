@@ -1,10 +1,10 @@
 PATH_DATA: str = "data"
-PATH_TRAIN: str = "train_set"
-PATH_TRAIN_FILTER: str = "train_set_filtered"
+PATH_TRAIN: str = "train_unfiltered_sampled"
+PATH_TRAIN_FILTER: str = "train_filtered"
 PATH_UNK: str = "unknown"
 MAX_SPECTRO: int = 500  # max de spectro par espèce
-BATCH_SIZE: int = 30  # taille des paquets de données
+BATCH_SIZE: int = 32  # taille des paquets de données
 HEIGHT: int = 500  # nb de pixels en hauteur
 WIDTH: int = 400  # nb de pixels en largeur
 # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
-EPOCHS: int = 5
+EPOCHS: int = 60

@@ -13,3 +13,7 @@ train.csv
 batch/
 spectrograms_4stars/
 data_done_4stars/
+train_unfiltered/
+train_unfiltered_sampled/
+train_old/
+train_filtered/
