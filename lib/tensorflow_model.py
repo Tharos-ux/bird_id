@@ -19,7 +19,7 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
     axs[1, 0].title.set_text('Fig. C : Validation set accuracy')
     axs[1, 1].title.set_text('Fig. D : Validation set loss')
 
-    x = [i+1 for i in range(training_steps)]
+    x = [i+1 for i in range(len(metrics.history['accuracy']))]
 
     axs[0, 0].plot(x, metrics.history['accuracy'])
     axs[0, 1].plot(x, metrics.history['loss'])
@@ -118,6 +118,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
             params['layer_03_size'], 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
+        tf.keras.layers.Dropout(0.5, training=False),
         tf.keras.layers.Dense(params['layer_dense_size'], activation='relu'),
         tf.keras.layers.Dense(len(class_names))  # sortie
     ])
