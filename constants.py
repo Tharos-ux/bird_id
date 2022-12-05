@@ -9,7 +9,7 @@ WIDTH: int = 400  # nb de pixels en largeur
 MODEL_PARAMS: dict = {
     # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
     'epochs': 30,
-    'batch': 64,  # taille des paquets de données
+    'batch': 32,  # taille des paquets de données
     'validation_split': 0.2,
     'layer_01_size': 8,
     'layer_02_size': 16,

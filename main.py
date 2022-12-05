@@ -47,6 +47,8 @@ if __name__ == "__main__":
                         help="Model will be saved on disk for later use", action='store_true')
     parser.add_argument("-f", "--filter",
                         help="Specifies spectro filtering", action='store_true')
+    parser.add_argument("-r", "--resnet",
+                        help="Uses ResNet architecture for model", action='store_true')
     args = parser.parse_args()
     setup_logs()
 
@@ -94,7 +96,8 @@ if __name__ == "__main__":
                 img_height=constants.HEIGHT,
                 img_width=constants.WIDTH,
                 params=constants.MODEL_PARAMS,
-                save_status=args.output
+                save_status=args.output,
+                resnet=args.resnet
             )
         critical("Model build!")
         if args.predict:
