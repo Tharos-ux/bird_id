@@ -123,8 +123,6 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
         tf.keras.layers.Dense(len(class_names))  # sortie
     ])
 
-    summary = str(model.summary())
-
     callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
     # model compilation
@@ -175,7 +173,7 @@ def save_model(trained_model, classes, model_training_informations, training_ste
         dump(classes, open(f"{out_path}/classes.json", "w"))
         dump(params, open(f"{out_path}/params.json", "w"))
         with open(f"{out_path}/model.txt", "w") as writer:
-            writer.write(summary)
+            trained_model.summary(print_fn=lambda x: writer.write(x + '\n'))
     plot_metrics(confusion_matrix, model_training_informations,
                  training_steps, classes, predictions, labels, out_path)
 
