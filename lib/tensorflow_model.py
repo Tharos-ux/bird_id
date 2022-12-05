@@ -154,7 +154,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               params['epochs'], confusion, predictions, labels, save_status, params, summary)
+               params['epochs'], confusion, predictions, labels, save_status, params)
     print(
         f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names
@@ -164,7 +164,7 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, predictions, labels, save_status, params, summary):
+def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, predictions, labels, save_status, params):
     out_path = None
     if save_status:
         out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
