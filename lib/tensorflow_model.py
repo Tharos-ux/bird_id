@@ -118,7 +118,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
             params['layer_03_size'], 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dropout(0.5, training=False),
+        tf.keras.layers.Dropout(0.5),
         tf.keras.layers.Dense(params['layer_dense_size'], activation='relu'),
         tf.keras.layers.Dense(len(class_names))  # sortie
     ])
