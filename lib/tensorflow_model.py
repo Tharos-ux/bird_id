@@ -9,6 +9,7 @@ from multiprocessing import cpu_count
 from math import sqrt
 import numpy as np
 from pandas import DataFrame, crosstab
+from time import process_time
 
 
 def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None):
@@ -227,24 +228,50 @@ def resnet_model(params, class_names, include_top=False, weights=None, input_sha
 
 
 def naive_model(img_height: int, img_width: int, params: dict, class_names: list):
-    return tf.keras.models.Sequential([
-        tf.keras.layers.Rescaling(
-            1./255, input_shape=(img_height, img_width, 3)),
-        tf.keras.layers.Conv2D(
-            params['layer_01_size'], 3, padding='same', activation='relu'),
-        tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Conv2D(
-            params['layer_02_size'], 3, padding='same', activation='relu'),
-        tf.keras.layers.MaxPooling2D(),
-        # couche de convolution 2D = nécessaire pour traiter des images en DL
-        tf.keras.layers.Conv2D(
-            params['layer_03_size'], 3, padding='same', activation='relu'),
-        tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.Dense(params['layer_dense_size'], activation='relu'),
-        tf.keras.layers.Dense(len(class_names), activation='softmax')  # sortie
-    ])
+    if params['num_layers'] == 3:
+        return tf.keras.models.Sequential([
+            tf.keras.layers.Rescaling(
+                1./255, input_shape=(img_height, img_width, 3)),
+            tf.keras.layers.Conv2D(
+                params['layer_01_filter_count'], params['layer_01_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(
+                params['layer_02_filter_count'], params['layer_02_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(
+                params['layer_03_filter_count'], params['layer_03_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dropout(params['dropout']),
+            tf.keras.layers.Dense(
+                params['layer_dense_size'], activation='relu', kernel_regularizer=tf.keras.regularizers.L1L2(l1=params['l1_regularization'], l2=params['l2_regularization'])),
+            tf.keras.layers.Dense(
+                len(class_names), activation='softmax')  # sortie
+        ])
+    elif params['num_layers'] == 4:
+        return tf.keras.models.Sequential([
+            tf.keras.layers.Rescaling(
+                1./255, input_shape=(img_height, img_width, 3)),
+            tf.keras.layers.Conv2D(
+                params['layer_01_filter_count'], params['layer_01_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(
+                params['layer_02_filter_count'], params['layer_02_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(
+                params['layer_03_filter_count'], params['layer_03_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(
+                params['layer_04_filter_count'], params['layer_04_kernel_size'], padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dropout(params['dropout']),
+            tf.keras.layers.Dense(
+                params['layer_dense_size'], activation='relu', kernel_regularizer=tf.keras.regularizers.L1L2(l1=params['l1_regularization'], l2=params['l2_regularization'])),
+            tf.keras.layers.Dense(
+                len(class_names), activation='softmax')  # sortie
+        ])
+    print(f"Number of layers {params['num_layers']} is not implemented.")
 
 
 def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool, resnet: bool):
@@ -301,14 +328,23 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
                   metrics=['accuracy']
                   )
 
+    start_time = process_time()
     # train model (for training_steps iterations)
-    model_training_informations = model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=params['epochs'],
-        callbacks=[tf.keras.callbacks.EarlyStopping(
-            monitor='loss', patience=3)]
-    )
+    if params['early_stopping']:
+        model_training_informations = model.fit(
+            train_ds,
+            validation_data=val_ds,
+            epochs=params['epochs'],
+            callbacks=[tf.keras.callbacks.EarlyStopping(
+                monitor='loss', patience=3)]
+        )
+    else:
+        model_training_informations = model.fit(
+            train_ds,
+            validation_data=val_ds,
+            epochs=params['epochs']
+        )
+    end_time = process_time()
 
     # get predictions
     predictions, labels = [], []
@@ -329,7 +365,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               predictions, labels, save_status, params)
+               predictions, labels, save_status, params, end_time - start_time)
     print(
         f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names
@@ -339,14 +375,15 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params):
+def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, exec_time):
     out_path = None
     if save_status:
         out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
-        dump(params, open(f"{out_path}/params.json", "w"))
+        dump({'execution_time': exec_time, 'true_epochs': len(
+            model_training_informations.history['accuracy']), **params}, open(f"{out_path}/params.json", "w"))
         with open(f"{out_path}/model.txt", "w") as writer:
             trained_model.summary(print_fn=lambda x: writer.write(x + '\n'))
     plot_metrics(model_training_informations, classes,
