@@ -4,7 +4,7 @@ from random import shuffle
 from collections import Counter
 
 spectros_path = "train_unfiltered"
-sample_rate = 1700
+sample_rate = 500
 
 species = Counter({my_dir: listdir(f"{spectros_path}/{my_dir}")
                    for my_dir in listdir(spectros_path)})

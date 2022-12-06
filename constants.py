@@ -10,9 +10,9 @@ MODEL_PARAMS: dict = {
     # nombre de packs d'itérations d'entrainements (epocs = k itérations du gradient)
     'epochs': 30,
     'batch': 32,  # taille des paquets de données
-    'validation_split': 0.2,
-    'layer_01_size': 8,
-    'layer_02_size': 16,
-    'layer_03_size': 32,
-    'layer_dense_size': 64,
+    'validation_split': 0.3,
+    'layer_01_size': 4,
+    'layer_02_size': 8,
+    'layer_03_size': 16,
+    'layer_dense_size': 32,
 }

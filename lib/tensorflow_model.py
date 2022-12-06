@@ -11,7 +11,7 @@ import numpy as np
 from pandas import DataFrame, crosstab
 
 
-def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels, path_to_save=None):
+def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None):
 
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
@@ -23,8 +23,8 @@ def plot_metrics(cm, metrics, training_steps, classes_names, predictions, labels
 
     axs[0, 0].plot(x, metrics.history['accuracy'])
     axs[0, 1].plot(x, metrics.history['loss'])
-    axs[1, 0].plot(x, metrics.history['val_loss'])
-    axs[1, 1].plot(x, metrics.history['val_accuracy'])
+    axs[1, 0].plot(x, metrics.history['val_accuracy'])
+    axs[1, 1].plot(x, metrics.history['val_loss'])
 
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/metrics.png", transparent=True)
@@ -241,9 +241,9 @@ def naive_model(img_height: int, img_width: int, params: dict, class_names: list
             params['layer_03_size'], 3, padding='same', activation='relu'),
         tf.keras.layers.MaxPooling2D(),
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dropout(0.2),
         tf.keras.layers.Dense(params['layer_dense_size'], activation='relu'),
-        tf.keras.layers.Dense(len(class_names))  # sortie
+        tf.keras.layers.Dense(len(class_names), activation='softmax')  # sortie
     ])
 
 
@@ -264,7 +264,8 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
         subset="training",
         seed=123,
         image_size=(img_height, img_width),
-        batch_size=params['batch']
+        batch_size=params['batch'],
+        shuffle=True
     )
 
     # building the validation dataset
@@ -274,13 +275,14 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
         subset="validation",
         seed=123,
         image_size=(img_height, img_width),
-        batch_size=params['batch']
+        batch_size=params['batch'],
+        shuffle=True
     )
 
     # get all the different classes names (here, folders)
     class_names: list[str] = train_ds.class_names
-    #train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
-    #val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    # train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)
+    # val_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
     # building model
     if resnet:
@@ -290,8 +292,6 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
         model = naive_model(img_height, img_width, params, class_names)
 
     model.summary()
-
-    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
     # model compilation
     # choose optimizer between SGD, ...
@@ -306,23 +306,30 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
         train_ds,
         validation_data=val_ds,
         epochs=params['epochs'],
-        callbacks=[callback]
+        callbacks=[tf.keras.callbacks.EarlyStopping(
+            monitor='loss', patience=3)]
     )
 
     # get predictions
+    predictions, labels = [], []
+    for x, y in val_ds:
+        predictions = np.concatenate(
+            [predictions, np.argmax(model.predict(x), axis=-1)])
+        labels = np.concatenate([labels, y.numpy()])
 
-    predictions = np.argmax(model.predict(val_ds), axis=1)
-    labels = np.concatenate([y for _, y in val_ds], axis=0)
-
+    m = tf.keras.metrics.Accuracy()
+    print(f"Validation accuracy = {m(labels, predictions).numpy()}")
     # compute confusion matrix with `tf`
     confusion = tf.math.confusion_matrix(
         labels=labels,   # get true labels
         predictions=predictions  # get predicted labels
     ).numpy()
 
+    print(confusion)
+
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               params['epochs'], confusion, predictions, labels, save_status, params)
+               predictions, labels, save_status, params)
     print(
         f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names
@@ -332,7 +339,7 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, training_steps, confusion_matrix, predictions, labels, save_status, params):
+def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params):
     out_path = None
     if save_status:
         out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
@@ -342,8 +349,8 @@ def save_model(trained_model, classes, model_training_informations, training_ste
         dump(params, open(f"{out_path}/params.json", "w"))
         with open(f"{out_path}/model.txt", "w") as writer:
             trained_model.summary(print_fn=lambda x: writer.write(x + '\n'))
-    plot_metrics(confusion_matrix, model_training_informations,
-                 training_steps, classes, predictions, labels, out_path)
+    plot_metrics(model_training_informations, classes,
+                 predictions, labels, out_path)
 
 
 def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_height, img_width, class_names) -> str:
