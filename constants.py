@@ -6,7 +6,8 @@ MAX_SPECTRO: int = 500  # max de spectro par espèce
 HEIGHT: int = 500  # nb de pixels en hauteur
 WIDTH: int = 400  # nb de pixels en largeur
 
-MODEL_PARAMS: dict = {
+
+MODEL_PARAMS_1: dict = {
     # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
     'epochs': 10,
     'early_stopping': False,
@@ -26,3 +27,5 @@ MODEL_PARAMS: dict = {
     'l1_regularization': 0.0,
     'l2_regularization': 0.0
 }
+
+LIST_OF_MODELS:list = [MODEL_PARAMS_1]

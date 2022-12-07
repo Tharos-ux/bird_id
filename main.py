@@ -85,29 +85,21 @@ if __name__ == "__main__":
         except Exception as exc:
             critical(f"C : {exc}")
 
-    if args.predict or args.output:
+    if args.predict:
         if args.model is not None:
             critical("Loading model")
             model, classes = load_model(args.model)
         else:
+            print("A model should be specified")
+    if args.output:
+        for model_params in constants.LIST_OF_MODELS:
             critical("Building model")
-            model, classes = modeling(
+            modeling(
                 data_directory=constants.PATH_TRAIN,
                 img_height=constants.HEIGHT,
                 img_width=constants.WIDTH,
-                params=constants.MODEL_PARAMS,
+                params=model_params,
                 save_status=args.output,
                 resnet=args.resnet
             )
-        critical("Model build!")
-        if args.predict:
-            for img in listdir(f"{constants.PATH_UNK}/"):
-                print(
-                    prediction(
-                        entry_path=f"{constants.PATH_UNK}/{img}",
-                        trained_model=model,
-                        img_height=constants.HEIGHT,
-                        img_width=constants.WIDTH,
-                        class_names=classes
-                    )
-                )
+            critical("Model build!")
