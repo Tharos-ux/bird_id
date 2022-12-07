@@ -9,7 +9,7 @@ from multiprocessing import cpu_count
 from math import sqrt
 import numpy as np
 from pandas import DataFrame, crosstab
-from time import process_time
+from time import process_time, monotonic
 
 
 def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None):
@@ -328,7 +328,8 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
                   metrics=['accuracy']
                   )
 
-    start_time = process_time()
+    start_time = monotonic()
+    start_time_cpu = process_time()
     # train model (for training_steps iterations)
     if params['early_stopping']:
         model_training_informations = model.fit(
@@ -344,7 +345,8 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
             validation_data=val_ds,
             epochs=params['epochs']
         )
-    end_time = process_time()
+    end_time = monotonic()
+    end_time_cpu = process_time()
 
     # get predictions
     predictions, labels = [], []
@@ -365,7 +367,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               predictions, labels, save_status, params, end_time - start_time)
+               predictions, labels, save_status, params, end_time_cpu - start_time_cpu, end_time - start_time)
     print(
         f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names
@@ -375,14 +377,14 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, exec_time):
+def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, cpu_exec_time, exec_time):
     out_path = None
     if save_status:
         out_path: str = f"models/{params['model_name']}_{params['iter']}_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
-        dump({'execution_time': exec_time, 'true_epochs': len(
+        dump({'execution_time': exec_time,'cpu_time':cpu_exec_time, 'true_epochs': len(
             model_training_informations.history['accuracy']),'accuracy_train':model_training_informations.history['accuracy'],'loss_train':model_training_informations.history['loss'],'accuracy_validation':model_training_informations.history['val_accuracy'],'loss_validation':model_training_informations.history['val_loss'], **params}, open(f"{out_path}/params.json", "w"))
         with open(f"{out_path}/model.txt", "w") as writer:
             trained_model.summary(print_fn=lambda x: writer.write(x + '\n'))
