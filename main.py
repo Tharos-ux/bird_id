@@ -93,12 +93,13 @@ if __name__ == "__main__":
             print("A model should be specified")
     if args.output:
         for model_params in constants.LIST_OF_MODELS:
+            for iteration in range(constants.ITERATIONS)
             critical("Building model")
             modeling(
                 data_directory=constants.PATH_TRAIN,
                 img_height=constants.HEIGHT,
                 img_width=constants.WIDTH,
-                params=model_params,
+                params={'iter':iteration,**model_params},
                 save_status=args.output,
                 resnet=args.resnet
             )

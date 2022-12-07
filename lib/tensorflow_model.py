@@ -378,12 +378,12 @@ def load_model(model_path: str):
 def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, exec_time):
     out_path = None
     if save_status:
-        out_path: str = f"models/model_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
+        out_path: str = f"models/{params['model_name']}_{params['iter']}_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
         dump({'execution_time': exec_time, 'true_epochs': len(
-            model_training_informations.history['accuracy']), **params}, open(f"{out_path}/params.json", "w"))
+            model_training_informations.history['accuracy']),'accuracy_train':model_training_informations.history['accuracy'],'loss_train':model_training_informations.history['loss'],'accuracy_validation':model_training_informations.history['val_accuracy'],'loss_validation':model_training_informations.history['val_loss'], **params}, open(f"{out_path}/params.json", "w"))
         with open(f"{out_path}/model.txt", "w") as writer:
             trained_model.summary(print_fn=lambda x: writer.write(x + '\n'))
     plot_metrics(model_training_informations, classes,

@@ -5,10 +5,11 @@ PATH_UNK: str = "unknown"
 MAX_SPECTRO: int = 500  # max de spectro par espèce
 HEIGHT: int = 500  # nb de pixels en hauteur
 WIDTH: int = 400  # nb de pixels en largeur
-
+ITERATIONS:int = 3 # number of time we do the models
 
 MODEL_PARAMS_1: dict = {
     # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
+    'model_name':'my_super_model'
     'epochs': 10,
     'early_stopping': False,
     'batch': 32,  # taille des paquets de données
