@@ -10,6 +10,7 @@ from math import sqrt
 import numpy as np
 from pandas import DataFrame, crosstab
 from time import process_time, monotonic
+from itertools import chain
 
 
 def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None):
@@ -228,50 +229,45 @@ def resnet_model(params, class_names, include_top=False, weights=None, input_sha
 
 
 def naive_model(img_height: int, img_width: int, params: dict, class_names: list):
-    if params['num_layers'] == 3:
-        return tf.keras.models.Sequential([
-            tf.keras.layers.Rescaling(
-                1./255, input_shape=(img_height, img_width, 3)),
-            tf.keras.layers.Conv2D(
-                params['layer_01_filter_count'], params['layer_01_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Conv2D(
-                params['layer_02_filter_count'], params['layer_02_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Conv2D(
-                params['layer_03_filter_count'], params['layer_03_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dropout(params['dropout']),
-            tf.keras.layers.Dense(
-                params['layer_dense_size'], activation='relu', kernel_regularizer=tf.keras.regularizers.L1L2(l1=params['l1_regularization'], l2=params['l2_regularization'])),
-            tf.keras.layers.Dense(
-                len(class_names), activation='softmax')  # sortie
-        ])
-    elif params['num_layers'] == 4:
-        return tf.keras.models.Sequential([
-            tf.keras.layers.Rescaling(
-                1./255, input_shape=(img_height, img_width, 3)),
-            tf.keras.layers.Conv2D(
-                params['layer_01_filter_count'], params['layer_01_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Conv2D(
-                params['layer_02_filter_count'], params['layer_02_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Conv2D(
-                params['layer_03_filter_count'], params['layer_03_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Conv2D(
-                params['layer_04_filter_count'], params['layer_04_kernel_size'], padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling2D(),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dropout(params['dropout']),
-            tf.keras.layers.Dense(
-                params['layer_dense_size'], activation='relu', kernel_regularizer=tf.keras.regularizers.L1L2(l1=params['l1_regularization'], l2=params['l2_regularization'])),
-            tf.keras.layers.Dense(
-                len(class_names), activation='softmax')  # sortie
-        ])
-    print(f"Number of layers {params['num_layers']} is not implemented.")
+    """Does a model. That's all."""
+
+    return tf.keras.models.Sequential(
+        list(
+            chain(
+                *[
+                    [
+                        tf.keras.layers.Rescaling(
+                            1./255, input_shape=(img_height, img_width, 3))
+                    ]
+                    +
+                    list(
+                        chain(
+                            *[
+                                [
+                                    tf.keras.layers.Conv2D(
+                                        params[f'layer_0{i+1}_filter_count'], params[f'layer_0{i+1}_kernel_size'], padding='same', activation='relu')
+                                ]
+                                +
+                                [
+                                    tf.keras.layers.MaxPooling2D()
+                                ] for i in range(params['num_layers'])
+                            ]
+                        )
+                    )
+                    +
+                    [
+                        tf.keras.layers.Flatten(),
+                        tf.keras.layers.Dropout(
+                            params['dropout']),
+                        tf.keras.layers.Dense(
+                            params['layer_dense_size'], activation='relu', kernel_regularizer=tf.keras.regularizers.L1L2(l1=params['l1_regularization'], l2=params['l2_regularization'])),
+                        tf.keras.layers.Dense(
+                            len(class_names), activation='softmax')  # sortie
+                    ]
+                ]
+            )
+        )
+    )
 
 
 def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool, resnet: bool):
@@ -384,8 +380,8 @@ def save_model(trained_model, classes, model_training_informations, predictions,
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
-        dump({'execution_time': exec_time,'cpu_time':cpu_exec_time, 'true_epochs': len(
-            model_training_informations.history['accuracy']),'accuracy_train':model_training_informations.history['accuracy'],'loss_train':model_training_informations.history['loss'],'accuracy_validation':model_training_informations.history['val_accuracy'],'loss_validation':model_training_informations.history['val_loss'], **params}, open(f"{out_path}/params.json", "w"))
+        dump({'execution_time': exec_time, 'cpu_time': cpu_exec_time, 'true_epochs': len(
+            model_training_informations.history['accuracy']), 'accuracy_train': model_training_informations.history['accuracy'], 'loss_train': model_training_informations.history['loss'], 'accuracy_validation': model_training_informations.history['val_accuracy'], 'loss_validation': model_training_informations.history['val_loss'], **params}, open(f"{out_path}/params.json", "w"))
         with open(f"{out_path}/model.txt", "w") as writer:
             trained_model.summary(print_fn=lambda x: writer.write(x + '\n'))
     plot_metrics(model_training_informations, classes,
