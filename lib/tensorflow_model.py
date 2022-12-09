@@ -333,7 +333,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
             validation_data=val_ds,
             epochs=params['epochs'],
             callbacks=[tf.keras.callbacks.EarlyStopping(
-                monitor='loss', patience=3)]
+                monitor='loss', patience=3, restore_best_weights=True)]
         )
     else:
         model_training_informations = model.fit(
