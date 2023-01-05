@@ -272,7 +272,7 @@ def naive_model(img_height: int, img_width: int, params: dict, class_names: list
     )
 
 
-def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool, resnet: bool):
+def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool, resnet: bool, save_path="models"):
 
     # Allocation of sqrt(threads) cores per process and sqrt(threads) parallel processes
     sqrt_threads: int = int(sqrt(cpu_count()))
@@ -365,7 +365,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
 
     # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
     save_model(model, class_names, model_training_informations,
-               predictions, labels, save_status, params, end_time_cpu - start_time_cpu, end_time - start_time)
+               predictions, labels, save_status, params, end_time_cpu - start_time_cpu, end_time - start_time, save_path)
     print(
         f"Finished model computation, ended after {len(model_training_informations.history['loss'])} epochs.")
     return model, class_names
@@ -375,10 +375,10 @@ def load_model(model_path: str):
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, cpu_exec_time, exec_time):
+def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, cpu_exec_time, exec_time, save_path):
     out_path = None
     if save_status:
-        out_path: str = f"models/{params['model_name']}_{params['iter']}_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
+        out_path: str = f"{save_path}/{params['model_name']}_{params['iter']}_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
         tf.keras.models.save_model(
             model=trained_model, filepath=out_path)
         dump(classes, open(f"{out_path}/classes.json", "w"))
