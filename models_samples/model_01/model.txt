@@ -1,0 +1,49 @@
+Model: "sequential_17"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ rescaling_17 (Rescaling)    (None, 500, 400, 3)       0         
+                                                                 
+ conv2d_84 (Conv2D)          (None, 500, 400, 8)       608       
+                                                                 
+ max_pooling2d_84 (MaxPoolin  (None, 250, 200, 8)      0         
+ g2D)                                                            
+                                                                 
+ conv2d_85 (Conv2D)          (None, 250, 200, 8)       584       
+                                                                 
+ max_pooling2d_85 (MaxPoolin  (None, 125, 100, 8)      0         
+ g2D)                                                            
+                                                                 
+ conv2d_86 (Conv2D)          (None, 125, 100, 16)      3216      
+                                                                 
+ max_pooling2d_86 (MaxPoolin  (None, 62, 50, 16)       0         
+ g2D)                                                            
+                                                                 
+ conv2d_87 (Conv2D)          (None, 62, 50, 32)        4640      
+                                                                 
+ max_pooling2d_87 (MaxPoolin  (None, 31, 25, 32)       0         
+ g2D)                                                            
+                                                                 
+ conv2d_88 (Conv2D)          (None, 31, 25, 16)        4624      
+                                                                 
+ max_pooling2d_88 (MaxPoolin  (None, 15, 12, 16)       0         
+ g2D)                                                            
+                                                                 
+ conv2d_89 (Conv2D)          (None, 15, 12, 8)         1160      
+                                                                 
+ max_pooling2d_89 (MaxPoolin  (None, 7, 6, 8)          0         
+ g2D)                                                            
+                                                                 
+ flatten_17 (Flatten)        (None, 336)               0         
+                                                                 
+ dropout_17 (Dropout)        (None, 336)               0         
+                                                                 
+ dense_34 (Dense)            (None, 32)                10784     
+                                                                 
+ dense_35 (Dense)            (None, 5)                 165       
+                                                                 
+=================================================================
+Total params: 25,781
+Trainable params: 25,781
+Non-trainable params: 0
+_________________________________________________________________

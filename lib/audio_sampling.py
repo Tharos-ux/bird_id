@@ -105,7 +105,8 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100
         l_chunks = list()
         for idx in range(limit):
             # j'ai décomposé pour que ce soit plus facile à comprendre/modifier mais on pourra condenser :)
-            chunk = entire_audio[int(idx*window*overlap):idx*window + window]
+            chunk = entire_audio[int(idx*window*overlap)
+                                     :int(idx*window + window)]
             mean_amplitude_chunk[idx] = np.mean(np.abs(chunk))
             mean_amplitude_chunk_norm[idx] = (mean_amplitude_chunk[idx] /
                                               (mean_amplitude_entire_audio + var_amplitude_entire_audio))
@@ -113,7 +114,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100
                 l_chunks.append(chunk)
         return l_chunks
     else:
-        return [entire_audio[idx*window:(idx*window)+window+(overlap*window)] for idx in range(limit)]
+        return [entire_audio[int(idx*window):int((idx*window)+window+(overlap*window))] for idx in range(limit)]
 
 
 if __name__ == "__main__":
@@ -131,7 +132,8 @@ if __name__ == "__main__":
     basicConfig(format='%(asctime)s %(message)s', datefmt='[%m/%d/%Y %I:%M:%S %p]', filename="bird_id.log",
                 encoding='utf-8', level=ERROR)
     if args.filter:
-        audio_processing(args.data, args.output, args.specie, args.max_spectro, filter=True)
+        audio_processing(args.data, args.output, args.specie,
+                         args.max_spectro, filter=True)
     else:
         audio_processing(args.data, args.output, args.specie, args.max_spectro)
     critical(f"Job {args.specie} ended sucessfully!")

@@ -1,64 +1,65 @@
 PATH_DATA: str = "data"
-PATH_TRAIN: str = "train_unfiltered_sampled"
+PATH_TRAIN: str = "train_filtered_30"
 PATH_TRAIN_FILTER: str = "train_filtered"
 PATH_UNK: str = "unknown"
 MAX_SPECTRO: int = 500  # max de spectro par espèce
 HEIGHT: int = 500  # nb de pixels en hauteur
 WIDTH: int = 400  # nb de pixels en largeur
-ITERATIONS: int = 3  # number of time we do the models
+ITERATIONS: int = 1  # number of time we do the models
 
 MODEL_PARAMS_1: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_333'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': '256_filtered_6L_30sp',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 256,
     'validation_split': 0.2,
-    'layer_01_filter_count': 4,
+    'layer_01_filter_count': 8,
     'layer_02_filter_count': 8,
     'layer_03_filter_count': 16,
     'layer_04_filter_count': 32,
-    'layer_01_kernel_size': 3,
+    'layer_05_filter_count': 32,
+    'layer_06_filter_count': 16,
+    'layer_01_kernel_size': 5,
+    'layer_02_kernel_size': 3,
+    'layer_03_kernel_size': 3,
+    'layer_04_kernel_size': 3,
+    'layer_05_kernel_size': 3,
+    'layer_06_kernel_size': 3,
+    'layer_dense_size': 64,
+    'dropout': 0.2,
+    'num_layers': 6,
+    'l1_regularization': 0.0,
+    'l2_regularization': 0.01
+}
+
+MODEL_PARAMS_2: dict = {
+    'model_name': 'MODEL_Moana_64',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 64,
+    'validation_split': 0.2,
+    'layer_01_filter_count': 8,
+    'layer_02_filter_count': 8,
+    'layer_03_filter_count': 16,
+    'layer_04_filter_count': 32,
+    'layer_01_kernel_size': 5,
     'layer_02_kernel_size': 3,
     'layer_03_kernel_size': 3,
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 3,  # number of layers (supports only 3 and 4)
-    'l1_regularization': 0.0,
-    'l2_regularization': 0.0
-}
-
-MODEL_PARAMS_2: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_555'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
-    'validation_split': 0.2,
-    'layer_01_filter_count': 4,
-    'layer_02_filter_count': 8,
-    'layer_03_filter_count': 16,
-    'layer_04_filter_count': 32,
-    'layer_01_kernel_size': 5,
-    'layer_02_kernel_size': 5,
-    'layer_03_kernel_size': 5,
-    'layer_04_kernel_size': 3,
-    'layer_dense_size': 32,
-    'dropout': 0.0,
-    'num_layers': 3,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
     'l2_regularization': 0.0
 }
 
 MODEL_PARAMS_3: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_533'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': 'MODEL_Moana_128',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 128,
     'validation_split': 0.2,
-    'layer_01_filter_count': 4,
+    'layer_01_filter_count': 8,
     'layer_02_filter_count': 8,
     'layer_03_filter_count': 16,
     'layer_04_filter_count': 32,
@@ -68,39 +69,37 @@ MODEL_PARAMS_3: dict = {
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 3,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
     'l2_regularization': 0.0
 }
 
 MODEL_PARAMS_4: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_553'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': 'MODEL_Moana_256',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 256,
     'validation_split': 0.2,
-    'layer_01_filter_count': 4,
+    'layer_01_filter_count': 8,
     'layer_02_filter_count': 8,
     'layer_03_filter_count': 16,
     'layer_04_filter_count': 32,
     'layer_01_kernel_size': 5,
-    'layer_02_kernel_size': 5,
+    'layer_02_kernel_size': 3,
     'layer_03_kernel_size': 3,
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 3,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
     'l2_regularization': 0.0
 }
 
 MODEL_PARAMS_5: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_535'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': 'MODEL_L2_32',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 32,
     'validation_split': 0.2,
     'layer_01_filter_count': 4,
     'layer_02_filter_count': 8,
@@ -108,43 +107,41 @@ MODEL_PARAMS_5: dict = {
     'layer_04_filter_count': 32,
     'layer_01_kernel_size': 5,
     'layer_02_kernel_size': 3,
-    'layer_03_kernel_size': 5,
+    'layer_03_kernel_size': 3,
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 3,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
-    'l2_regularization': 0.0
+    'l2_regularization': 0.1
 }
 
 MODEL_PARAMS_6: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_353'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': 'MODEL_L2_64',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 64,
     'validation_split': 0.2,
     'layer_01_filter_count': 4,
     'layer_02_filter_count': 8,
     'layer_03_filter_count': 16,
     'layer_04_filter_count': 32,
-    'layer_01_kernel_size': 3,
-    'layer_02_kernel_size': 5,
+    'layer_01_kernel_size': 5,
+    'layer_02_kernel_size': 3,
     'layer_03_kernel_size': 3,
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 3,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
-    'l2_regularization': 0.0
+    'l2_regularization': 0.1
 }
 
 MODEL_PARAMS_7: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_5333'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': 'MODEL_L2_128',
+    'epochs': 100,
+    'early_stopping': True,
+    'batch': 128,
     'validation_split': 0.2,
     'layer_01_filter_count': 4,
     'layer_02_filter_count': 8,
@@ -156,39 +153,16 @@ MODEL_PARAMS_7: dict = {
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 4,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
-    'l2_regularization': 0.0
+    'l2_regularization': 0.1
 }
 
 MODEL_PARAMS_8: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_3555'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
-    'validation_split': 0.2,
-    'layer_01_filter_count': 4,
-    'layer_02_filter_count': 8,
-    'layer_03_filter_count': 16,
-    'layer_04_filter_count': 32,
-    'layer_01_kernel_size': 3,
-    'layer_02_kernel_size': 5,
-    'layer_03_kernel_size': 5,
-    'layer_04_kernel_size': 5,
-    'layer_dense_size': 32,
-    'dropout': 0.0,
-    'num_layers': 4,  # number of layers (supports only 3 and 4)
-    'l1_regularization': 0.0,
-    'l2_regularization': 0.0
-}
-
-MODEL_PARAMS_9: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_5353'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+    'model_name': 'MODEL_L2_256',
+    'epochs': 256,
+    'early_stopping': True,
+    'batch': 32,
     'validation_split': 0.2,
     'layer_01_filter_count': 4,
     'layer_02_filter_count': 8,
@@ -196,36 +170,34 @@ MODEL_PARAMS_9: dict = {
     'layer_04_filter_count': 32,
     'layer_01_kernel_size': 5,
     'layer_02_kernel_size': 3,
-    'layer_03_kernel_size': 5,
+    'layer_03_kernel_size': 3,
     'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 4,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
-    'l2_regularization': 0.0
+    'l2_regularization': 0.1
 }
 
-MODEL_PARAMS_10: dict = {
-    # nombre de packs d'itérations d'entrainements (epochs = k itérations du gradient)
-    'model_name': 'MODEL_archi_3535'
-    'epochs': 10,
-    'early_stopping': False,
-    'batch': 32,  # taille des paquets de données
+MODEL_PARAMS_9: dict = {
+    'model_name': 'FULL_256',
+    'epochs': 5,
+    'early_stopping': True,
+    'batch': 256,
     'validation_split': 0.2,
     'layer_01_filter_count': 4,
     'layer_02_filter_count': 8,
     'layer_03_filter_count': 16,
     'layer_04_filter_count': 32,
-    'layer_01_kernel_size': 3,
-    'layer_02_kernel_size': 5,
+    'layer_01_kernel_size': 5,
+    'layer_02_kernel_size': 3,
     'layer_03_kernel_size': 3,
-    'layer_04_kernel_size': 5,
+    'layer_04_kernel_size': 3,
     'layer_dense_size': 32,
     'dropout': 0.0,
-    'num_layers': 4,  # number of layers (supports only 3 and 4)
+    'num_layers': 4,
     'l1_regularization': 0.0,
-    'l2_regularization': 0.0
+    'l2_regularization': 0.1
 }
 
-LIST_OF_MODELS: list = [MODEL_PARAMS_1, MODEL_PARAMS_2, MODEL_PARAMS_3, MODEL_PARAMS_4,
-                        MODEL_PARAMS_5, MODEL_PARAMS_6]
+LIST_OF_MODELS: list = [MODEL_PARAMS_1]

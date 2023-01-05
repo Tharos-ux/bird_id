@@ -49,7 +49,7 @@ def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None)
     # clustering
     rcParams['figure.figsize'] = 25, 20
     sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
-                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=True)
+                   cbar_pos=None, xticklabels=True, yticklabels=True, annot=False)
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/cluster_matrix.png", transparent=True)
     else:
@@ -57,10 +57,12 @@ def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None)
 
     plt.close()
 
+    # TODO annot=True
+
     rcParams['figure.figsize'] = 25, 20
     ax = plt.axes()
     ax.set_title(f"Confusion matrix")
-    sns.heatmap(cm, annot=True, cmap=sns.cubehelix_palette(
+    sns.heatmap(cm, annot=False, cmap=sns.cubehelix_palette(
         as_cmap=True), linewidths=0.5, ax=ax)
     if path_to_save is not None:
         plt.savefig(f"{path_to_save}/conf_matrix.png", transparent=True)

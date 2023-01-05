@@ -5,16 +5,18 @@ import matplotlib.pyplot as plt
 
 # on met tout le début du nom des dossiers ici
 # il faut qu'ils soient différenciables
-PREFIXES: list = ["6L_32", "6L_64", "6L_128", "6L_256"]
+# un nom par truc dans liste préfixe
+NOMS = ["4, brut", "6, brut", "4, filtré", "6, filtré"]
+PREFIXES: list = ["4L_non_filtre", "6L_non_filtre", "4L_filtre", "6L_filtre"]
 
 # on met le nom de la métrique que l'on veut récup (key du dictionnaire json)
-METRIC: str = 'accuracy_train'
-EPOCH_BOUND: int = 10
+METRIC: str = 'true_epochs'
+EPOCH_BOUND: int = 30
 
 metric: list = [[] for _ in range(len(PREFIXES))]
 
 # on donne le dir des modèles
-PATH: str = "models"
+PATH: str = "modeles_30sp"
 
 
 def match(dir: str, prefixes: list) -> bool:
@@ -32,7 +34,7 @@ def get_prefix(dir: str, prefixes: str) -> str:
 
 is_metric_list: bool = False
 x = [i for i in range(EPOCH_BOUND)]
-plt.rcParams["figure.figsize"] = (12, 8)
+plt.rcParams["figure.figsize"] = (6, 8)
 for dir in [d for d in listdir(f"{PATH}/") if match(d, PREFIXES)]:
     dic_params: dict = load(open(f"{PATH}/{dir}/params.json", "r"))
     if isinstance(dic_params[METRIC], list):
@@ -47,15 +49,15 @@ if is_metric_list:
     for i, met in enumerate(metric):
         plt.errorbar(x, [mean(serie) for serie in asarray(
             met).transpose()], yerr=[std(serie)/2 for serie in asarray(
-                met).transpose()], label=PREFIXES[i], fmt='--o')
-    plt.legend(bbox_to_anchor=(1.01, 0.5), loc="center left", borderaxespad=0)
+                met).transpose()], label=NOMS[i], fmt='--o')
+    plt.legend()  # bbox_to_anchor=(1.01, 0.5), loc="center left", borderaxespad=0
     plt.savefig(f"{METRIC}.png", transparent=True)
     plt.show()
 else:
     error = [std(serie)/2 for serie in asarray(metric)]
     for i, val in enumerate([mean(serie) for serie in asarray(metric)]):
-        plt.bar(i, val, yerr=error[i], label=PREFIXES[i],
+        plt.bar(i, val, yerr=error[i], label=NOMS[i],
                 align='center', alpha=0.5, ecolor='black', capsize=10)
-    plt.xticks([i for i in range(len(PREFIXES))], PREFIXES)
-    plt.savefig(f"{METRIC}.png", transparent=True)
+    plt.xticks([i for i in range(len(PREFIXES))], NOMS)
+    plt.savefig(f"{METRIC}.png", transparent=True, bbox_inches='tight')
     plt.show()
