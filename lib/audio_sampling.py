@@ -37,7 +37,7 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
     for raw_audio in listdir(f"{data_path}/{specie}/"):
         processed: bool = False
         while not processed:
-            if rating[raw_audio] >= rating_max: # keeps only great rated audio
+            if rating[raw_audio] >= rating_max:  # keeps only great rated audio
                 try:
                     # cuts the audio into chunks
                     l_chunks = load_in_blocks(
@@ -50,7 +50,7 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
                 except ZeroDivisionError:
                     processed = True
 
-                except Exception as exc: # Slows down the process to avoid memory errors
+                except Exception as exc:  # Slows down the process to avoid memory errors
                     next_iter: float = 10 + 20*random()
                     critical(
                         f"W : Occured exception on file {raw_audio}.\n                         {exc}\n                         Resuming task in {int(next_iter)} seconds.")
@@ -75,7 +75,7 @@ def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path:
     """
     for idx_chunk, chunk in enumerate(l_chunks):
         plt.rcParams["figure.figsize"] = (5, 4)
-        spectro = librosa.stft(chunk) # convertion into spectrogram
+        spectro = librosa.stft(chunk)  # convertion into spectrogram
         librosa.display.specshow(
             librosa.amplitude_to_db(np.abs(spectro), ref=np.max)
         )
@@ -99,8 +99,8 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100
 
     entire_audio, sr = librosa.core.load(
         audio_path, mono=True, sr=22050, res_type='kaiser_fast')
-    available_time = librosa.get_duration(y=entire_audio) # initial audio duration
-
+    available_time = librosa.get_duration(
+        y=entire_audio)  # initial audio duration
 
     limit: int = min(int(available_time//frame_size), limit_chunks)
     if limit == 0:
@@ -115,7 +115,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100
 
         l_chunks = list()
         for idx in range(limit):
-            chunk = entire_audio[int(idx*window*overlap):int(idx*window + window)]
+            chunk = entire_audio[int(idx*window*overlap)                                 :int(idx*window + window)]
             mean_amplitude_chunk[idx] = np.mean(np.abs(chunk))
             mean_amplitude_chunk_norm[idx] = (mean_amplitude_chunk[idx] /
                                               (mean_amplitude_entire_audio + var_amplitude_entire_audio))

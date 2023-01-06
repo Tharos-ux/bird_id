@@ -81,7 +81,6 @@ def plot_metrics(metrics, classes_names: list, predictions: list, labels: list, 
     plt.close()
 
 
-
 def resnet_model(params, class_names, include_top=False, weights=None, input_shape=None, layer_params=[2, 2, 2, 2], pooling=None):
     BN_AXIS = 3
     DATA_FORMAT = 'channels_last'
