@@ -13,18 +13,17 @@ from time import process_time, monotonic
 from itertools import chain
 
 
-def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None):
-    """Plots model metrics (Accuracy, Loss) +
-       confusion and clustering matrices of the computed model
+def plot_metrics(metrics, classes_names: list, predictions: list, labels: list, path_to_save: str = None):
+    """Plots out metrics and test set results
 
     Args:
-        metrics (_type_): _description_
-        classes_names (_type_): _description_
-        predictions (_type_): _description_
-        labels (_type_): _description_
-        path_to_save (_type_, optional): _description_. Defaults to None.
+        metrics (history): model fitting informations
+        classes_names (list): all classes used for train
+        predictions (list): predicted results for test set instances
+        labels (list): true results for test set instances
+        path_to_save (str, optional): path where model will be stored. Defaults to None.
     """
-    # metrics
+
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
     axs[0, 1].title.set_text('Fig. B : Loss')
@@ -242,7 +241,17 @@ def resnet_model(params, class_names, include_top=False, weights=None, input_sha
 
 
 def naive_model(img_height: int, img_width: int, params: dict, class_names: list):
-    """Does a model. That's all."""
+    """Inits a CNN-style model (keras-sequential) from given parameters
+
+    Args:
+        img_height (int): height for images
+        img_width (int): width for images
+        params (dict): dict of params, as defined in 'constants.py'
+        class_names (list): all classes used for train
+
+    Returns:
+        Sequential: descriptions of layers as an object
+    """
 
     return tf.keras.models.Sequential(
         list(
@@ -283,8 +292,21 @@ def naive_model(img_height: int, img_width: int, params: dict, class_names: list
     )
 
 
-def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool, resnet: bool, save_path="models"):
+def modeling(data_directory: str, img_height: int, img_width: int, params: dict, save_status: bool, resnet: bool, save_path="models") -> tuple:
+    """Calls for model creation and fitting, and then evaluates metrics for this model with a test set.
 
+    Args:
+        data_directory (str): path to train
+        img_height (int): size of images
+        img_width (int): size of images
+        params (dict): dict of params, as defined in 'constants.py'
+        save_status (bool): tells if model should be saved to drive when computation ends
+        resnet (bool): tells if model should be resnet
+        save_path (str, optional): output path for saving model. Defaults to "models".
+
+    Returns:
+        tuple: (model, classes names)
+    """
     # Allocation of sqrt(threads) cores per process and sqrt(threads) parallel processes
     sqrt_threads: int = int(sqrt(cpu_count()))
     tf.config.threading.set_inter_op_parallelism_threads(sqrt_threads)
@@ -382,11 +404,33 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
     return model, class_names
 
 
-def load_model(model_path: str):
+def load_model(model_path: str) -> tuple:
+    """Loads a model and a list of classes from a previously saved model
+
+    Args:
+        model_path (str): path to folder containing the saved files
+
+    Returns:
+        tuple: (model,list of classes)
+    """
     return tf.keras.models.load_model(model_path), load(open(f"{model_path}/classes.json", "r"))
 
 
-def save_model(trained_model, classes, model_training_informations, predictions, labels, save_status, params, cpu_exec_time, exec_time, save_path):
+def save_model(trained_model, classes: list, model_training_informations, predictions: list, labels: list, save_status: bool, params: dict, cpu_exec_time: int, exec_time: int, save_path: str) -> None:
+    """Saves a trained model to disk for later use
+
+    Args:
+        trained_model (tf.model): trained model
+        classes (list): list of classes used for train
+        model_training_informations (history): history object containing iterations informations
+        predictions (list): list of predictions for test set
+        labels (list): true labels for test set
+        save_status (bool): if should save to drive
+        params (dict): model dict parameters (constants.py format)
+        cpu_exec_time (int): processor time of fitting the model
+        exec_time (int): real time for model fitting
+        save_path (str): path where model will be stored
+    """
     out_path = None
     if save_status:
         out_path: str = f"{save_path}/{params['model_name']}_{params['iter']}_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}"
@@ -407,6 +451,9 @@ def prediction(entry_path: str, trained_model: tf.keras.models.Sequential, img_h
     Args:
         entry_path (str): path to file to test
         trained_model (tf.keras.models.Sequential): a trained model
+        img_height (int): size of img
+        img_width (int): size of img
+        class_names (list): list of classes used for train
 
     Returns:
         str: a string giving the name of the most probable bird

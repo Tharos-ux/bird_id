@@ -13,6 +13,7 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import matplotlib
+# interface mandatory to be used in multithreaded mode for lowering resource-consumption
 matplotlib.use('agg')
 
 
@@ -21,8 +22,12 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
 
     Args:
         data_path (str): directory containing species folders
+        output_path (str): output master directory
+        specie (str): name of subfolder
+        max_spectro (int, optional): limits the number of spectrograms to plot per specie. Defaults to 700.
+        rating_max (float, optional): defines a target score level for audio, refering to a 'rating.json' file. Defaults to 4.
+        filter (bool, optional): tells if a restrictive filter should be applied to chunks. Defaults to False.
     """
-
     critical(f"Processing specie '{specie}'")
     with open("rating.json") as file:
         rating: dict = load(file)
@@ -59,13 +64,14 @@ def audio_processing(data_path: str, output_path: str, specie: str, max_spectro:
 
 
 def export_spectro(l_chunks: list, specie_name: str, filename: str, output_path: str):
-    """ Converts audio into spectros and exports them
+    """Converts audio into spectros and exports them
         /!\ SPECTROS ARE 500x400px for consistency issues --> some weren't this size without fixed params
+
     Args:
-        l_chunks (list): list of chunks
-        specie_name (str): _description_
-        filename (str): _description_
-        output_path (str): _description_
+        l_chunks (list): list of all audio chunks to plot
+        specie_name (str): name of subfolder
+        filename (str): name of audio file
+        output_path (str): output master directory
     """
     for idx_chunk, chunk in enumerate(l_chunks):
         plt.rcParams["figure.figsize"] = (5, 4)
