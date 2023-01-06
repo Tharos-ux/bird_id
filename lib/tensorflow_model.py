@@ -14,7 +14,17 @@ from itertools import chain
 
 
 def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None):
+    """Plots model metrics (Accuracy, Loss) +
+       confusion and clustering matrices of the computed model
 
+    Args:
+        metrics (_type_): _description_
+        classes_names (_type_): _description_
+        predictions (_type_): _description_
+        labels (_type_): _description_
+        path_to_save (_type_, optional): _description_. Defaults to None.
+    """
+    # metrics
     fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
     axs[0, 1].title.set_text('Fig. B : Loss')
@@ -46,7 +56,7 @@ def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None)
         'Actual'], colnames=['Predicted'])
     print('MATRIX : ', cm, 'FIN')
 
-    # clustering
+    # clustering matrix
     rcParams['figure.figsize'] = 25, 20
     sns.clustermap(cm, cmap=sns.cubehelix_palette(as_cmap=True),
                    cbar_pos=None, xticklabels=True, yticklabels=True, annot=False)
@@ -58,7 +68,7 @@ def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None)
     plt.close()
 
     # TODO annot=True
-
+    # confusion matrix
     rcParams['figure.figsize'] = 25, 20
     ax = plt.axes()
     ax.set_title(f"Confusion matrix")
@@ -70,6 +80,7 @@ def plot_metrics(metrics, classes_names, predictions, labels, path_to_save=None)
         plt.show()
 
     plt.close()
+
 
 
 def resnet_model(params, class_names, include_top=False, weights=None, input_shape=None, layer_params=[2, 2, 2, 2], pooling=None):
