@@ -27,6 +27,7 @@ options:
 
 ## Implemented functions
 
+```
 NAME
     tensorflow_model
 
@@ -158,4 +159,4 @@ FUNCTIONS
         * func : a function
         * argslist (list): a list of tuples, arguments of each func
         * num_processes (int) : max number of concurrent instances
-
+```
