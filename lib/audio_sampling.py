@@ -97,7 +97,7 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100
         list of chunks
     """
 
-    entire_audio, sr = librosa.core.load(
+    entire_audio, _ = librosa.core.load(
         audio_path, mono=True, sr=22050, res_type='kaiser_fast')
     available_time = librosa.get_duration(
         y=entire_audio)  # initial audio duration
@@ -108,21 +108,15 @@ def load_in_blocks(audio_path: str, frame_size: int = 3, limit_chunks: int = 100
     window: int = len(entire_audio)//limit
 
     if filter:
-        mean_amplitude_chunk = [0 for _ in range(limit)]
-        mean_amplitude_chunk_norm = [0 for _ in range(limit)]
-        mean_amplitude_entire_audio = np.mean(np.abs(entire_audio))
-        var_amplitude_entire_audio = abs(np.var(np.abs(entire_audio)))
-
         l_chunks = list()
         for idx in range(limit):
-            chunk = entire_audio[int(idx*window*overlap)                                 :int(idx*window + window)]
-            mean_amplitude_chunk[idx] = np.mean(np.abs(chunk))
-            mean_amplitude_chunk_norm[idx] = (mean_amplitude_chunk[idx] /
-                                              (mean_amplitude_entire_audio + var_amplitude_entire_audio))
-            if mean_amplitude_chunk_norm[idx] > 1:
+            chunk = entire_audio[int(idx*window*overlap) : int(idx*window + window)]
+            mean_amplitude_chunk_norm = (np.mean(np.abs(chunk)) /
+                                              (np.mean(np.abs(entire_audio)) + abs(np.var(np.abs(entire_audio)))))
+            if mean_amplitude_chunk_norm > 1:
                 l_chunks.append(chunk)
-        return l_chunks
 
+        return l_chunks
     else:
         return [entire_audio[int(idx*window):int((idx*window)+window+(overlap*window))] for idx in range(limit)]
 

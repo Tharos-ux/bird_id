@@ -24,7 +24,7 @@ def plot_metrics(metrics, classes_names: list, predictions: list, labels: list, 
         path_to_save (str, optional): path where model will be stored. Defaults to None.
     """
 
-    fig, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
+    _, axs = plt.subplots(figsize=(16, 9), dpi=100, ncols=2, nrows=2)
     axs[0, 0].title.set_text('Fig. A : Accuracy')
     axs[0, 1].title.set_text('Fig. B : Loss')
     axs[1, 0].title.set_text('Fig. C : Validation set accuracy')
@@ -395,7 +395,7 @@ def modeling(data_directory: str, img_height: int, img_width: int, params: dict,
 
     print(confusion)
 
-    # tracer les loss functions au cours des itérations permet de montrer l'overfit si on a divergence au-delà d'un point
+    # Plot loss functions during iterations allows to show overfitting if there's divergence passed a given point
     save_model(model, class_names, model_training_informations,
                predictions, labels, save_status, params, end_time_cpu - start_time_cpu, end_time - start_time, save_path)
     print(
